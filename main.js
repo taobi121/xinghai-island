@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RESUME } from './resume.js';
-import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js';
+import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120a';
 import { buildCottage, buildCrystalTower, buildBrickHall, buildGlassTower, buildPostTower } from './buildings.js';
 import { PALETTE } from './textures.js';
-import { createPlayer } from './character.js';
+import { createPlayer } from './character.js?v=20261120a';
 
 const G = ISLAND.groundY, R = ISLAND.radius;
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
