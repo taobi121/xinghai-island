@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="640" viewBox="0 0 480 640">
+  <defs>
+    <linearGradient id="cover" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5e9a83"/>
+      <stop offset=".56" stop-color="#3f7d6f"/>
+      <stop offset="1" stop-color="#2f665f"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e7dbc2"/>
+      <stop offset="1" stop-color="#fff8e8"/>
+    </linearGradient>
+    <linearGradient id="chart" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff2aa"/>
+      <stop offset="1" stop-color="#9ee5ca"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#183f39" flood-opacity=".3"/>
+    </filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="640" rx="46" fill="url(#cover)" filter="url(#shadow)"/>
+  <rect x="15" y="15" width="450" height="610" rx="34" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="4"/>
+  <rect x="0" y="0" width="480" height="640" rx="46" fill="url(#grid)"/>
+  <path d="M0 502 C92 476 183 544 282 504 C371 468 430 480 480 502 V640 H0Z" fill="#254f49" opacity=".42"/>
+  <rect x="395" y="42" width="40" height="556" rx="20" fill="#234b46" opacity=".42"/>
+  <rect x="394" y="42" width="8" height="556" rx="4" fill="#f1d77f" opacity=".72"/>
+  <rect x="42" y="42" width="58" height="556" rx="18" fill="url(#page)" opacity=".94"/>
+  <path d="M82 42 H100 V598 H82Z" fill="#d8c7aa" opacity=".72"/>
+  <g transform="translate(118 54)">
+    <text x="0" y="22" fill="#f6e5a8" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" font-weight="700" letter-spacing="4">DATA STUDIO</text>
+    <text x="0" y="92" fill="#fffaf0" font-family="STKaiti,KaiTi,PingFang SC,serif" font-size="54" font-weight="800">数据分析</text>
+    <text x="2" y="132" fill="#d7f5e7" font-family="Futura,Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="4">DATA ANALYSIS</text>
+    <path d="M2 158 H252" stroke="#f2d778" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+    <g transform="translate(28 205)">
+      <rect width="292" height="230" rx="34" fill="#f8f2dc" opacity=".95"/>
+      <path d="M32 178 H264" stroke="#8a9d83" stroke-width="3" stroke-linecap="round"/>
+      <path d="M32 178 V38" stroke="#8a9d83" stroke-width="3" stroke-linecap="round"/>
+      <g fill="#d3e6c8">
+        <rect x="57" y="126" width="34" height="52" rx="12"/>
+        <rect x="108" y="98" width="34" height="80" rx="12"/>
+        <rect x="159" y="110" width="34" height="68" rx="12"/>
+        <rect x="210" y="63" width="34" height="115" rx="12"/>
+      </g>
+      <path d="M42 144 C78 134 94 92 128 104 C163 116 174 64 209 78 C231 86 246 52 265 43" fill="none" stroke="#e0a34f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <g fill="#fff" stroke="#d59c43" stroke-width="4">
+        <circle cx="42" cy="144" r="8"/>
+        <circle cx="128" cy="104" r="8"/>
+        <circle cx="209" cy="78" r="8"/>
+        <circle cx="265" cy="43" r="8"/>
+      </g>
+      <g transform="translate(218 10)" fill="#4d7568">
+        <circle cx="18" cy="10" r="8"/>
+        <circle cx="42" cy="10" r="8"/>
+        <circle cx="66" cy="10" r="8"/>
+        <path d="M18 10 L42 10 L66 10 M18 10 L42 28 M42 10 L42 28 M66 10 L42 28" fill="none" stroke="#4d7568" stroke-width="3"/>
+        <rect x="28" y="28" width="28" height="20" rx="7" fill="#9ac9aa"/>
+      </g>
+    </g>
+    <g transform="translate(4 474)">
+      <rect width="122" height="34" rx="17" fill="#fff5d2" opacity=".95"/>
+      <text x="61" y="23" text-anchor="middle" fill="#3d6f62" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" font-weight="700">机器学习</text>
+      <rect x="132" width="72" height="34" rx="17" fill="#fff5d2" opacity=".95"/>
+      <text x="168" y="23" text-anchor="middle" fill="#3d6f62" font-family="Arial,sans-serif" font-size="15" font-weight="700">MODEL</text>
+    </g>
+    <text x="4" y="543" fill="#d9f1e8" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="16">数据洞察 · 可视化 · 机器学习</text>
+  </g>
+</svg>

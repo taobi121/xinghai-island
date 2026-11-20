@@ -42,14 +42,21 @@ function add(parent, geo, material, x = 0, y = 0, z = 0, shadow = true) {
   return m;
 }
 
-export function createPlayer(emissiveMats) {
+export function createPlayer(emissiveMats, options = {}) {
+  const initialOutfit = {
+    sweater: Number.isFinite(options.sweater) ? options.sweater : C.sweater,
+    sweaterDark: Number.isFinite(options.sweaterDark) ? options.sweaterDark : C.sweaterDark,
+    pants: Number.isFinite(options.pants) ? options.pants : C.pants,
+    shoe: Number.isFinite(options.shoe) ? options.shoe : C.shoe,
+    sole: Number.isFinite(options.sole) ? options.sole : C.sole
+  };
   const group = new THREE.Group();
-  group.name = 'player';
+  group.name = options.name || 'player';
   const em = Array.isArray(emissiveMats) ? emissiveMats : [];
 
   /* ---------- 躯干：宽松圆领毛衣，全部圆润几何 ---------- */
-  const sweaterMat = mk(C.sweater);
-  const sweaterDarkMat = mk(C.sweaterDark);
+  const sweaterMat = mk(initialOutfit.sweater);
+  const sweaterDarkMat = mk(initialOutfit.sweaterDark);
   const torso = add(group, new THREE.SphereGeometry(0.44, 28, 20), sweaterMat, 0, 1.0, 0);
   torso.scale.set(0.98, 0.94, 0.78);
   const hem = add(group, new THREE.SphereGeometry(0.4, 24, 16), sweaterDarkMat, 0, 0.75, 0);
@@ -95,31 +102,33 @@ export function createPlayer(emissiveMats) {
     lock.rotation.z = rot;
   });
 
-  /* ---------- 耳机：珊瑚红 Q 版耳罩，全身唯一高饱和点缀 ---------- */
   const coralMat = mk(C.coral, { roughness: 0.7 });
   const whiteMat = mk(C.cream, { roughness: 0.75 });
   const metalMat = mk(C.metal, { metalness: 0.3, roughness: 0.55 });
   const innerMat = mk(C.cupInner, { roughness: 0.8 });
   const glowMat = mk(C.coral, { emissive: C.coral, emissiveIntensity: 0.06, roughness: 0.7 });
-  em.push({ mat: glowMat, dayI: 0.06, nightI: 0.5 });
+  if (options.headphones !== false) {
+    /* ---------- 耳机：珊瑚红 Q 版耳罩，全身唯一高饱和点缀 ---------- */
+    em.push({ mat: glowMat, dayI: 0.06, nightI: 0.5 });
 
-  // 头梁半环 + 内侧细环
-  add(group, new THREE.TorusGeometry(0.465, 0.032, 10, 40, Math.PI), whiteMat, 0, 1.74, -0.02);
-  add(group, new THREE.TorusGeometry(0.442, 0.014, 8, 40, Math.PI), coralMat, 0, 1.74, 0.005, false);
-  for (const sx of [-1, 1]) {
-    // 金属滑杆
-    add(group, new THREE.CapsuleGeometry(0.032, 0.09, 4, 8), metalMat, sx * 0.465, 1.86, -0.02);
-    // 耳罩：扁圆柱，轴向 X
-    const cup = add(group, new THREE.CylinderGeometry(0.21, 0.21, 0.15, 24), coralMat, sx * 0.45, 1.74, 0);
-    cup.rotation.z = Math.PI / 2;
-    // 暖白外环
-    const ring = add(group, new THREE.TorusGeometry(0.176, 0.022, 8, 28), whiteMat, sx * 0.535, 1.74, 0, false);
-    ring.rotation.y = Math.PI / 2;
-    // 深灰内圈
-    const inner = add(group, new THREE.CylinderGeometry(0.138, 0.138, 0.015, 24), innerMat, sx * 0.54, 1.74, 0, false);
-    inner.rotation.z = Math.PI / 2;
-    // 极弱发光小点（夜间轻微亮起）
-    add(group, new THREE.SphereGeometry(0.032, 10, 8), glowMat, sx * 0.552, 1.74, 0, false);
+    // 头梁半环 + 内侧细环
+    add(group, new THREE.TorusGeometry(0.465, 0.032, 10, 40, Math.PI), whiteMat, 0, 1.74, -0.02);
+    add(group, new THREE.TorusGeometry(0.442, 0.014, 8, 40, Math.PI), coralMat, 0, 1.74, 0.005, false);
+    for (const sx of [-1, 1]) {
+      // 金属滑杆
+      add(group, new THREE.CapsuleGeometry(0.032, 0.09, 4, 8), metalMat, sx * 0.465, 1.86, -0.02);
+      // 耳罩：扁圆柱，轴向 X
+      const cup = add(group, new THREE.CylinderGeometry(0.21, 0.21, 0.15, 24), coralMat, sx * 0.45, 1.74, 0);
+      cup.rotation.z = Math.PI / 2;
+      // 暖白外环
+      const ring = add(group, new THREE.TorusGeometry(0.176, 0.022, 8, 28), whiteMat, sx * 0.535, 1.74, 0, false);
+      ring.rotation.y = Math.PI / 2;
+      // 深灰内圈
+      const inner = add(group, new THREE.CylinderGeometry(0.138, 0.138, 0.015, 24), innerMat, sx * 0.54, 1.74, 0, false);
+      inner.rotation.z = Math.PI / 2;
+      // 极弱发光小点（夜间轻微亮起）
+      add(group, new THREE.SphereGeometry(0.032, 10, 8), glowMat, sx * 0.552, 1.74, 0, false);
+    }
   }
 
   /* ---------- 五官：超大眼 + 每眼 2 个白色高光点（M5 / ref3） ---------- */
@@ -145,16 +154,18 @@ export function createPlayer(emissiveMats) {
   const mouth = add(group, new THREE.TorusGeometry(0.055, 0.011, 8, 18, Math.PI), mk(C.mouth), 0, 1.60, 0.44, false);
   mouth.rotation.z = Math.PI;
 
-  /* ---------- 小斜挎包 ---------- */
-  const bag = add(group, new THREE.SphereGeometry(0.26, 18, 14), mk(C.bag), 0.3, 0.98, 0.24);
-  bag.scale.set(1.0, 0.86, 0.62);
-  const flap = add(group, new THREE.SphereGeometry(0.24, 16, 12), mk(C.bagDark), 0.3, 1.09, 0.31);
-  flap.scale.set(1.0, 0.42, 0.45);
-  const strap = add(group, new THREE.CapsuleGeometry(0.028, 0.88, 6, 10), mk(C.bagDark), 0.02, 1.12, 0.28, false);
-  strap.rotation.z = 0.98;
+  if (options.bag !== false) {
+    /* ---------- 小斜挎包 ---------- */
+    const bag = add(group, new THREE.SphereGeometry(0.26, 18, 14), mk(C.bag), 0.3, 0.98, 0.24);
+    bag.scale.set(1.0, 0.86, 0.62);
+    const flap = add(group, new THREE.SphereGeometry(0.24, 16, 12), mk(C.bagDark), 0.3, 1.09, 0.31);
+    flap.scale.set(1.0, 0.42, 0.45);
+    const strap = add(group, new THREE.CapsuleGeometry(0.028, 0.88, 6, 10), mk(C.bagDark), 0.02, 1.12, 0.28, false);
+    strap.rotation.z = 0.98;
+  }
 
   /* ---------- 可切换配饰：贝雷帽 / 圆框眼镜 / 围巾 / 花朵发夹 ---------- */
-  const accessoryMat = mk(0xE67C67, { roughness: 0.72 });
+  const accessoryMat = mk(Number.isFinite(options.accessoryColor) ? options.accessoryColor : 0xE67C67, { roughness: 0.72 });
   const accessoryTrimMat = mk(C.cream, { roughness: 0.8 });
   const accessories = {};
 
@@ -219,9 +230,9 @@ export function createPlayer(emissiveMats) {
   const armL = makeArm(-1), armR = makeArm(1);
 
   /* ---------- 腿（枢轴在髋 y=0.58, x=±0.16，保持不变） ---------- */
-  const pantsMat = mk(C.pants);
-  const shoeMat = mk(C.shoe);
-  const soleMat = mk(C.sole);
+  const pantsMat = mk(initialOutfit.pants);
+  const shoeMat = mk(initialOutfit.shoe);
+  const soleMat = mk(initialOutfit.sole);
   function makeLeg(sx) {
     const p = new THREE.Group();
     p.position.set(sx * 0.16, 0.58, 0);
@@ -251,6 +262,8 @@ export function createPlayer(emissiveMats) {
   function setAccessoryColor(color) {
     if (Number.isFinite(color)) accessoryMat.color.setHex(color);
   }
+
+  if (options.glasses) setAccessory('glasses');
 
   return { group, armL, armR, legL, legR, setOutfit, setAccessory, setAccessoryColor };
 }

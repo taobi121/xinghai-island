@@ -5,7 +5,7 @@ import { RESUME } from './resume.js';
 import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120h';
 import { buildCottage, buildCrystalTower, buildBrickHall, buildGlassTower, buildPostTower } from './buildings.js';
 import { PALETTE } from './textures.js?v=20261120b';
-import { createPlayer } from './character.js?v=20261120b';
+import { createPlayer } from './character.js?v=20261120c';
 
 const G = ISLAND.groundY, R = ISLAND.radius;
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
@@ -49,6 +49,33 @@ const ACCESSORIES = [
   { id: 'scarf', name: '小围巾', icon: '🧣' },
   { id: 'flower', name: '花朵发夹', icon: '🌸' }
 ];
+const QUEST_BOOKS = {
+  database: {
+    title: '数据库',
+    image: './assets/book-database.svg',
+    description: '数据库课本，系统介绍关系数据模型、SQL、索引与事务等核心知识；配套计算机三级、四级证书与软考中级证书。',
+    badges: ['计算机三级', '计算机四级', '软考中级证书']
+  },
+  analytics: {
+    title: '数据分析',
+    image: './assets/book-data-analysis.svg',
+    description: '数据分析课本，从数据整理与可视化入门，并进一步掌握部分机器学习知识。',
+    badges: ['数据分析基础', '部分机器学习知识']
+  }
+};
+const QUEST_TARGETS = {
+  carousel: { bookId: 'database', seconds: 10, place: '旋转木马' },
+  'seat-0': { bookId: 'analytics', seconds: 5, place: '左侧长椅' }
+};
+const QUEST_STORAGE_KEY = 'xinghai-island-book-quest';
+let questState = { database: false, analytics: false, questStarted: false };
+try {
+  const savedQuest = JSON.parse(localStorage.getItem(QUEST_STORAGE_KEY) || 'null');
+  if (savedQuest && typeof savedQuest === 'object') questState = { ...questState, ...savedQuest };
+} catch (_) {}
+function saveQuestState() {
+  try { localStorage.setItem(QUEST_STORAGE_KEY, JSON.stringify(questState)); } catch (_) {}
+}
 // 运行时组装收件地址，页面中不出现明文邮箱。
 const MAILBOX_RECIPIENT = String.fromCharCode(57,55,48,48,51,52,56,49,51,64,113,113,46,99,111,109);
 const hexToInt = value => parseInt(String(value).replace('#', ''), 16);
@@ -288,6 +315,25 @@ player.position.set(SPAWN.x, G, SPAWN.z);
 player.rotation.y = Math.PI; // 面朝小岛
 islandGroup.add(player);
 
+// 灰衣、黑裤、圆框眼镜的岛主 NPC
+const NPC_POS = { x: 4.8, z: 9.8 };
+const npcRig = createPlayer(emissiveMats, {
+  name: 'island-owner-npc',
+  sweater: 0x8B8E94,
+  sweaterDark: 0x70747B,
+  pants: 0x202329,
+  shoe: 0x30343A,
+  sole: 0x15171B,
+  accessoryColor: 0x353A40,
+  glasses: true,
+  headphones: false,
+  bag: false
+});
+npcRig.group.position.set(NPC_POS.x, G, NPC_POS.z);
+npcRig.group.rotation.y = 0.16;
+npcRig.group.scale.setScalar(0.98);
+islandGroup.add(npcRig.group);
+
 // 全局绘本柔化：压低不透明材质的镜面反射，抬高粗糙度（半透明水面/玻璃保持原样）
 scene.traverse(o => {
   if (!o.isMesh || !o.material) return;
@@ -415,6 +461,9 @@ const areaTitle = $('areaTitle'), areaName = $('areaName');
 const speech = $('speech'), speechText = $('speechText');
 const nearBtn = $('nearBtn'), nearName = $('nearName');
 const panel = $('panel'), panelContent = $('panelContent');
+const bookModal = $('bookModal'), bookImage = $('bookImage'), bookTitle = $('bookTitle');
+const bookDescription = $('bookDescription'), bookBadges = $('bookBadges');
+const bookFoundCount = $('bookFoundCount'), bookNext = $('bookNext');
 
 function updateTimeUI(hour, day) {
   if (document.activeElement !== timeSlider) timeSlider.value = hour;
@@ -443,6 +492,59 @@ function say(text, ms = 3600) {
   speech.classList.remove('hidden');
   clearTimeout(speechTimer);
   speechTimer = setTimeout(() => speech.classList.add('hidden'), ms);
+}
+
+function foundBookCount() {
+  return Number(Boolean(questState.database)) + Number(Boolean(questState.analytics));
+}
+
+function closeBookReward() {
+  bookModal.classList.add('hidden');
+}
+
+function showBookReward(bookId) {
+  const book = QUEST_BOOKS[bookId];
+  if (!book || questState[bookId]) return;
+  questState[bookId] = true;
+  saveQuestState();
+
+  bookImage.src = book.image;
+  bookImage.alt = `${book.title}课本封面`;
+  bookTitle.textContent = `《${book.title}》`;
+  bookDescription.textContent = book.description;
+  bookBadges.innerHTML = book.badges.map(label => `<span class="book-badge">${label}</span>`).join('');
+  bookFoundCount.textContent = `${foundBookCount()} / 2`;
+  bookNext.textContent = foundBookCount() === 2
+    ? '两本课本都找齐了。现在回到灰衣岛主身边，把这个好消息告诉他吧。'
+    : bookId === 'database'
+      ? '还差《数据分析》：去左侧长椅坐下，并保持 5 秒。'
+      : '还差《数据库》：去旋转木马坐下，并保持 10 秒。';
+  bookModal.classList.remove('hidden');
+  nearBtn.classList.remove('show');
+  say('课本出现了！', 2200);
+}
+
+$('bookClose').addEventListener('click', closeBookReward);
+$('bookContinue').addEventListener('click', closeBookReward);
+bookModal.addEventListener('click', e => {
+  if (e.target === bookModal) closeBookReward();
+});
+
+function talkToNpc() {
+  questState.questStarted = true;
+  saveQuestState();
+  if (questState.database && questState.analytics) {
+    say('岛主：谢谢你，你是我的恩人。', 6500);
+    return;
+  }
+  if (questState.database || questState.analytics) {
+    const missingId = questState.database ? 'analytics' : 'database';
+    const missing = QUEST_BOOKS[missingId];
+    const target = missingId === 'database' ? '旋转木马，坐满 10 秒' : '左侧长椅，坐满 5 秒';
+    say(`岛主：已经找回一本了！还差《${missing.title}》——去${target}。`, 5500);
+    return;
+  }
+  say('岛主：能帮我找找我的两本课本吗？《数据库》藏在旋转木马里，坐满 10 秒；《数据分析》藏在左边长椅里，坐满 5 秒。', 7600);
 }
 
 /* ==========================================================================
@@ -598,6 +700,10 @@ function closeCenterOverlays() {
   const helpModal = $('helpModal');
   if (helpModal && !helpModal.classList.contains('hidden')) {
     helpModal.classList.add('hidden');
+    closed = true;
+  }
+  if (bookModal && !bookModal.classList.contains('hidden')) {
+    closeBookReward();
     closed = true;
   }
   return closed;
@@ -759,7 +865,13 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyE' && (nearB || nearRide || rideState) && cameraMode === 'follow' && !panelOpen) { openNearby(); }
   const p = { Digit1: 6.5, Digit2: 12, Digit3: 18.5, Digit4: 22 }[e.code];
   if (p) { timeState.hour = p; applyTime(p); }
-  if (e.code === 'Escape') { if (rideState) endRide(); closePanel(); }
+  if (e.code === 'Escape') {
+    if (bookModal && !bookModal.classList.contains('hidden')) closeBookReward();
+    else {
+      if (rideState) endRide();
+      closePanel();
+    }
+  }
 });
 addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -970,7 +1082,17 @@ const MAILBOX = {
   r: 2.2,
   model: props.mailbox
 };
-const INTERACTABLES = [...RIDES, ...SEATS, MAILBOX];
+const NPC = {
+  id: 'island-owner',
+  kind: 'npc',
+  name: '灰衣岛主',
+  icon: '🧑🏻‍💻',
+  x: NPC_POS.x,
+  z: NPC_POS.z,
+  r: 2.45,
+  model: npcRig.group
+};
+const INTERACTABLES = [...RIDES, ...SEATS, MAILBOX, NPC];
 let rideState = null;
 const nbIcon = nearBtn.querySelector('.nb-icon');
 const nbHint = nearBtn.querySelector('.nb-text small');
@@ -981,7 +1103,7 @@ function setNearButton(icon, name, hint) {
 for (const r of INTERACTABLES) {
   const div = document.createElement('div');
   div.className = 'scene-label';
-  const action = r.kind === 'seat' ? '坐下' : r.kind === 'mailbox' ? '留言' : '游玩';
+  const action = r.kind === 'seat' ? '坐下' : r.kind === 'mailbox' ? '留言' : r.kind === 'npc' ? '对话' : '游玩';
   div.innerHTML = `<span class="dot"></span>${r.icon} ${r.name} · E ${action}`;
   const lo = new CSS2DObject(div);
   r.labelNode = lo;
@@ -991,6 +1113,8 @@ for (const r of INTERACTABLES) {
     lo.position.set(0, 1.75, 0); r.model.add(lo);
   } else if (r.kind === 'mailbox') {
     lo.position.set(0, 2.05, 0); r.model.add(lo);
+  } else if (r.kind === 'npc') {
+    lo.position.set(0, 2.55, 0); r.model.add(lo);
   } else {
     lo.position.set(r.x, G + 5.0, r.z); islandGroup.add(lo);
   }
@@ -1001,7 +1125,7 @@ function updateInteractionLabels() {
     const x = r.id === 'bike' && props.bicycle ? props.bicycle.position.x : r.x;
     const z = r.id === 'bike' && props.bicycle ? props.bicycle.position.z : r.z;
     const distance = Math.hypot(player.position.x - x, player.position.z - z);
-    const labelRange = r.kind === 'seat' ? 2.8 : r.id === 'carousel' ? 5.2 : r.kind === 'mailbox' ? 3.1 : 3.0;
+    const labelRange = r.kind === 'seat' ? 2.8 : r.id === 'carousel' ? 5.2 : r.kind === 'mailbox' ? 3.1 : r.kind === 'npc' ? 4.5 : 3.0;
     r.labelNode.visible = entered && !panelOpen && !riding && distance <= labelRange;
   }
 }
@@ -1009,6 +1133,10 @@ function startRide(r) {
   if (rideState || !r || !entered || panelOpen) return;
   if (r.kind === 'mailbox') {
     openPanel('mailbox');
+    return;
+  }
+  if (r.kind === 'npc') {
+    talkToNpc();
     return;
   }
   rideState = { id: r.id, kind: r.kind || 'ride', name: r.name, icon: r.icon, t: 0 };
@@ -1024,11 +1152,14 @@ function startRide(r) {
     legL.rotation.x = legR.rotation.x = -1.22;
     armL.rotation.x = armR.rotation.x = 0.08;
   }
-  const message = r.kind === 'seat'
-    ? '坐下歇一会儿吧～按 E 或点按钮起身。'
-    : r.id === 'carousel'
-      ? '坐稳咯～旋转木马转起来啦！再按 E 或点按钮下来。'
-      : '骑上小车啦！用 WASD / 摇杆绕岛兜风，按 E 下车。';
+  const questTarget = QUEST_TARGETS[r.id];
+  const message = questTarget && !questState[questTarget.bookId]
+    ? `感觉这里藏着什么…保持坐着 ${questTarget.seconds} 秒试试。`
+    : r.kind === 'seat'
+      ? '坐下歇一会儿吧～按 E 或点按钮起身。'
+      : r.id === 'carousel'
+        ? '坐稳咯～旋转木马转起来啦！再按 E 或点按钮下来。'
+        : '骑上小车啦！用 WASD / 摇杆绕岛兜风，按 E 下车。';
   say(message, 4200);
 }
 function endRide() {
@@ -1055,6 +1186,10 @@ function endRide() {
 function updateRide(dt) {
   const st = rideState;
   st.t += dt;
+  const questTarget = QUEST_TARGETS[st.id];
+  if (questTarget && !questState[questTarget.bookId] && st.t >= questTarget.seconds) {
+    showBookReward(questTarget.bookId);
+  }
   if (st.kind === 'seat') {
     const seat = SEATS.find(s => s.id === st.id);
     if (seat) player.position.set(seat.sitX, G + 0.04, seat.sitZ);
@@ -1125,12 +1260,19 @@ function updateNearby() {
   if (rideState) {
     if (nearB) { setHover(nearB, false); nearB = null; }
     nearRide = null;
-    const activeHint = rideState.kind === 'seat'
-      ? '点击 / E 起身'
-      : rideState.id === 'bike'
-        ? '点击 / E 下车'
-        : '点击 / E 结束游玩';
-    const activeName = rideState.kind === 'seat' ? '正在休息 · 长椅' : '正在玩 · ' + rideState.name;
+    const questTarget = QUEST_TARGETS[rideState.id];
+    const searching = questTarget && !questState[questTarget.bookId];
+    const remaining = searching ? Math.max(0, Math.ceil(questTarget.seconds - rideState.t)) : 0;
+    const activeHint = searching
+      ? `保持坐着 · ${remaining} 秒`
+      : rideState.kind === 'seat'
+        ? '点击 / E 起身'
+        : rideState.id === 'bike'
+          ? '点击 / E 下车'
+          : '点击 / E 结束游玩';
+    const activeName = searching
+      ? `寻找《${QUEST_BOOKS[questTarget.bookId].title}》`
+      : rideState.kind === 'seat' ? '正在休息 · 长椅' : '正在玩 · ' + rideState.name;
     setNearButton(rideState.icon, activeName, activeHint);
     nearBtn.classList.add('show');
     return;
@@ -1161,7 +1303,11 @@ function updateNearby() {
     if (near) setHover(near, true);
   }
   if (nearRide) {
-    const hint = nearRide.kind === 'mailbox' ? '点击 / E 打开留言箱' : '点击 / E 坐上去玩';
+    const hint = nearRide.kind === 'mailbox'
+      ? '点击 / E 打开留言箱'
+      : nearRide.kind === 'npc'
+        ? '点击 / E 和岛主对话'
+        : '点击 / E 坐上去玩';
     setNearButton(nearRide.icon, nearRide.name, hint);
     nearBtn.classList.add('show');
   }
@@ -1255,6 +1401,9 @@ function animate() {
   if (props.carousel && props.carousel.userData.carousel) {
     props.carousel.userData.carousel.rotation.y += dt * 0.25;
   }
+  npcRig.group.position.y = G + Math.sin(t * 1.35) * 0.012;
+  npcRig.armL.rotation.z = Math.sin(t * 1.05) * 0.025;
+  npcRig.armR.rotation.z = -Math.sin(t * 1.05) * 0.025;
   if (dockMesh.userData.flag) dockMesh.userData.flag.rotation.y = 0.2 + Math.sin(t*1.5)*0.15;
   buildings.forEach(b => { const cur = b.scale.x, tgt = 1+(b.userData.hoverT||0)*0.04; b.scale.setScalar(cur+(tgt-cur)*0.15); });
 
@@ -1306,6 +1455,8 @@ window.__islandDebug = {
   getPlayer: () => ({ x: player.position.x, z: player.position.z }),
   getSpawn: () => ({ ...SPAWN }),
   getNear: () => nearB ? nearB.userData.panelKey : null,
+  getQuest: () => ({ ...questState }),
+  npcPos: () => ({ ...NPC_POS }),
   teleport: (x, z) => { player.position.x = x; player.position.z = z; },
   buildingPos: () => COLLIDERS.map(c => ({ x: c.x, z: c.z, r: c.r }))
 };

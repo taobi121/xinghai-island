@@ -209,6 +209,26 @@ canvas{display:block}
 .mail-status.error{color:#b24d3d}
 .mail-privacy{padding:12px 14px;font-size:11px;line-height:1.7;color:#76644f;background:rgba(232,192,106,.12);border-radius:13px}
 
+/* ---------- 隐藏课本奖励 ---------- */
+.modal.book-modal{z-index:62;background:rgba(25,45,52,.46)}
+.book-reward-card{position:relative;width:min(900px,94vw);max-height:calc(100vh - 36px);overflow-y:auto;padding:32px;background:var(--paper);border:3px solid #fff;border-radius:30px;box-shadow:var(--shadow-card),0 28px 80px rgba(24,48,58,.34);background-image:var(--grain)}
+.book-close{position:absolute;top:15px;right:15px;z-index:2;width:36px;height:36px;color:var(--ink);background:rgba(212,169,74,.16);border:none;border-radius:50%;cursor:pointer}
+.book-kicker{position:relative;z-index:1;margin-bottom:14px;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:3px;text-align:center}
+.book-layout{display:grid;grid-template-columns:minmax(250px,.88fr) minmax(0,1.12fr);align-items:center;gap:38px}
+.book-visual{position:relative;display:grid;place-items:center;min-height:390px;padding:22px;background:radial-gradient(circle at 50% 46%,rgba(231,192,100,.22),rgba(255,255,255,.18) 54%,transparent 72%)}
+.book-visual::after{content:'';position:absolute;left:18%;right:18%;bottom:22px;height:26px;background:rgba(45,45,38,.2);filter:blur(15px);border-radius:50%}
+.book-visual img{position:relative;z-index:1;width:min(250px,70vw);max-height:430px;object-fit:contain;filter:drop-shadow(0 22px 22px rgba(43,48,44,.24));transform:rotate(-2deg);border-radius:23px}
+.book-count{position:absolute;left:18px;bottom:16px;z-index:2;padding:7px 12px;color:#6b5120;background:rgba(255,248,234,.94);border:2px solid #fff;border-radius:999px;box-shadow:0 5px 14px rgba(53,46,31,.14);font-size:12px;font-weight:800}
+.book-copy{padding:16px 8px 12px 0}
+.book-overline{margin-bottom:5px;color:#b28b2f;font-size:10px;font-weight:800;letter-spacing:3px}
+.book-copy h2{font-family:var(--font-display);font-size:38px;line-height:1.25;color:#3d3020;margin-bottom:14px}
+.book-description{font-size:14px;line-height:1.9;color:#74634f;margin-bottom:18px}
+.book-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.book-badge{padding:7px 11px;color:#70551b;background:rgba(247,226,160,.5);border:1px solid rgba(212,169,74,.35);border-radius:999px;font-size:11px;font-weight:800;box-shadow:inset 0 0 0 2px rgba(255,255,255,.46)}
+.book-next{padding:13px 15px;margin-bottom:20px;color:#5d6e5e;background:rgba(150,190,145,.14);border:1px dashed rgba(98,139,91,.34);border-radius:14px;font-size:12px;line-height:1.7}
+.book-continue{width:100%;padding:13px 20px;color:#fff;font:inherit;font-size:14px;font-weight:800;background:linear-gradient(135deg,#e0b354,#bb8a24);border:2px solid rgba(255,255,255,.58);border-radius:999px;box-shadow:0 5px 0 #a97a1c;cursor:pointer;transition:transform .18s}
+.book-continue:hover{transform:translateY(-2px)}
+
 /* ---------- 帮助弹层 ---------- */
 .modal{position:absolute;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(30,50,60,.35);backdrop-filter:blur(3px);transition:opacity .3s}
 .modal-card{width:min(400px,92vw);padding:30px 30px 26px;background:var(--paper);border:3px solid #fff;border-radius:22px;box-shadow:0 20px 60px rgba(30,60,70,.35),0 0 0 6px rgba(212,169,74,.3)}
@@ -264,4 +284,18 @@ canvas{display:block}
   #musicPlayer{display:none !important}
   #panel{padding:42px 20px 30px}
   .panel-title{font-size:22px}
+  .book-reward-card{width:calc(100vw - 20px);max-height:calc(100vh - 20px);padding:24px 16px 18px;border-radius:24px}
+  .book-kicker{margin-bottom:10px;font-size:9px}
+  .book-layout{grid-template-columns:1fr;gap:4px}
+  .book-visual{min-height:220px;padding:3px 12px 18px}
+  .book-visual img{width:min(150px,44vw);max-height:230px;border-radius:15px}
+  .book-count{left:50%;bottom:0;transform:translateX(-50%);padding:5px 10px;font-size:10px}
+  .book-copy{padding:0 4px 4px}
+  .book-overline{text-align:center}
+  .book-copy h2{font-size:25px;text-align:center;margin-bottom:8px}
+  .book-description{font-size:12px;line-height:1.7;margin-bottom:12px}
+  .book-badges{gap:5px;margin-bottom:12px}
+  .book-badge{padding:6px 9px;font-size:10px}
+  .book-next{padding:10px 12px;margin-bottom:14px;font-size:11px}
+  .book-continue{padding:11px 18px;font-size:13px}
 }
