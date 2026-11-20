@@ -49,14 +49,15 @@ export function createPlayer(emissiveMats) {
 
   /* ---------- 躯干：宽松圆领毛衣，全部圆润几何 ---------- */
   const sweaterMat = mk(C.sweater);
+  const sweaterDarkMat = mk(C.sweaterDark);
   const torso = add(group, new THREE.SphereGeometry(0.44, 28, 20), sweaterMat, 0, 1.0, 0);
   torso.scale.set(0.98, 0.94, 0.78);
-  const hem = add(group, new THREE.SphereGeometry(0.4, 24, 16), mk(C.sweaterDark), 0, 0.75, 0);
+  const hem = add(group, new THREE.SphereGeometry(0.4, 24, 16), sweaterDarkMat, 0, 0.75, 0);
   hem.scale.set(1.0, 0.28, 0.78);
   const collar = add(group, new THREE.TorusGeometry(0.19, 0.045, 10, 24), mk(C.cream), 0, 1.35, 0.02);
   collar.rotation.x = Math.PI / 2;
   collar.scale.set(1, 0.85, 1);
-  const hood = add(group, new THREE.SphereGeometry(0.32, 20, 14), mk(C.sweaterDark), 0, 1.34, -0.18);
+  const hood = add(group, new THREE.SphereGeometry(0.32, 20, 14), sweaterDarkMat, 0, 1.34, -0.18);
   hood.scale.set(1.05, 0.7, 0.62);
 
   /* ---------- 头：半径 0.46，中心 y=1.74（大头 Q 版） ---------- */
@@ -167,19 +168,30 @@ export function createPlayer(emissiveMats) {
   const armL = makeArm(-1), armR = makeArm(1);
 
   /* ---------- 腿（枢轴在髋 y=0.58, x=±0.16，保持不变） ---------- */
+  const pantsMat = mk(C.pants);
+  const shoeMat = mk(C.shoe);
+  const soleMat = mk(C.sole);
   function makeLeg(sx) {
     const p = new THREE.Group();
     p.position.set(sx * 0.16, 0.58, 0);
-    const trouser = add(p, new THREE.CapsuleGeometry(0.12, 0.3, 6, 12), mk(C.pants), 0, -0.24, 0);
+    const trouser = add(p, new THREE.CapsuleGeometry(0.12, 0.3, 6, 12), pantsMat, 0, -0.24, 0);
     trouser.scale.set(1, 1, 0.92);
-    const sole = add(p, new THREE.SphereGeometry(1, 14, 10), mk(C.sole), 0, -0.535, 0.05);
+    const sole = add(p, new THREE.SphereGeometry(1, 14, 10), soleMat, 0, -0.535, 0.05);
     sole.scale.set(0.128, 0.045, 0.195);
-    const shoe = add(p, new THREE.SphereGeometry(1, 16, 12), mk(C.shoe), 0, -0.485, 0.06);
+    const shoe = add(p, new THREE.SphereGeometry(1, 16, 12), shoeMat, 0, -0.485, 0.06);
     shoe.scale.set(0.125, 0.085, 0.19);
     group.add(p);
     return p;
   }
   const legL = makeLeg(-1), legR = makeLeg(1);
 
-  return { group, armL, armR, legL, legR };
+  function setOutfit(outfit = {}) {
+    if (Number.isFinite(outfit.sweater)) sweaterMat.color.setHex(outfit.sweater);
+    if (Number.isFinite(outfit.sweaterDark)) sweaterDarkMat.color.setHex(outfit.sweaterDark);
+    if (Number.isFinite(outfit.pants)) pantsMat.color.setHex(outfit.pants);
+    if (Number.isFinite(outfit.shoe)) shoeMat.color.setHex(outfit.shoe);
+    if (Number.isFinite(outfit.sole)) soleMat.color.setHex(outfit.sole);
+  }
+
+  return { group, armL, armR, legL, legR, setOutfit };
 }

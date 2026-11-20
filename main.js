@@ -16,6 +16,37 @@ const FOCUS = {
   about: [12, 15, 3.2], skills: [12, 16, 4.0],
   experience: [17, 20, 6.6], projects: [13, 15, 3.0], contact: [13, 17, 4.5]
 };
+const OUTFITS = [
+  {
+    id: 'mist', name: '雾蓝航海', icon: '🌊',
+    note: '柔和雾蓝针织衫，清爽又适合岛上散步。',
+    sweater: 0x5A7A9A, sweaterDark: 0x4C6A88, pants: 0x3E4A5A, shoe: 0xF5F2EA, sole: 0x3E4A5A,
+    swatches: ['#5A7A9A', '#3E4A5A', '#F5F2EA']
+  },
+  {
+    id: 'coral', name: '珊瑚晚风', icon: '🌅',
+    note: '珊瑚橙搭配暖棕长裤，像黄昏海面一样明亮。',
+    sweater: 0xE47A63, sweaterDark: 0xB95C50, pants: 0x514134, shoe: 0xFFF3DF, sole: 0x5D3C32,
+    swatches: ['#E47A63', '#514134', '#FFF3DF']
+  },
+  {
+    id: 'forest', name: '林间漫游', icon: '🌿',
+    note: '低饱和森林绿，适合乘凉、看喷泉和慢慢闲逛。',
+    sweater: 0x5E8F72, sweaterDark: 0x3F6D57, pants: 0x3A4A42, shoe: 0xEEF1E0, sole: 0x2F3D37,
+    swatches: ['#5E8F72', '#3A4A42', '#EEF1E0']
+  },
+  {
+    id: 'butter', name: '奶油晴日', icon: '☀️',
+    note: '奶油黄和暖白鞋，元气感更足的一套。',
+    sweater: 0xE0B65B, sweaterDark: 0xB58634, pants: 0x5B4A39, shoe: 0xFFF8E8, sole: 0x654E36,
+    swatches: ['#E0B65B', '#5B4A39', '#FFF8E8']
+  }
+];
+let currentOutfit = 'mist';
+try {
+  const savedOutfit = localStorage.getItem('xinghai-outfit');
+  if (OUTFITS.some(o => o.id === savedOutfit)) currentOutfit = savedOutfit;
+} catch (_) {}
 const container = document.getElementById('scene-container');
 
 /* ==========================================================================
@@ -149,7 +180,17 @@ COLLIDERS.push({ x: 0, z: 0, r: 3.6 });
 /* ==========================================================================
    玩家角色：由 character.js 工厂创建（正面 +Z，原点在脚底）
    ========================================================================== */
-const { group: player, armL, armR, legL, legR } = createPlayer(emissiveMats);
+const { group: player, armL, armR, legL, legR, setOutfit } = createPlayer(emissiveMats);
+function applyOutfit(id, announce = false) {
+  const outfit = OUTFITS.find(o => o.id === id);
+  if (!outfit) return;
+  currentOutfit = outfit.id;
+  setOutfit(outfit);
+  try { localStorage.setItem('xinghai-outfit', outfit.id); } catch (_) {}
+  document.querySelectorAll('[data-outfit]').forEach(btn => btn.classList.toggle('active', btn.dataset.outfit === outfit.id));
+  if (announce) say(`换好啦：${outfit.name}`, 2200);
+}
+applyOutfit(currentOutfit);
 // 脚下阴影
 const pShadow = new THREE.Mesh(new THREE.CircleGeometry(0.5, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false }));
 pShadow.rotation.x = -Math.PI / 2; islandGroup.add(pShadow);
@@ -337,13 +378,41 @@ function buildPanelHTML(key) {
     case 'contact':
       return head('CONTACT', '联系方式', '欢迎交流，期待与你相遇！') +
         r.contact.map(c => `<div class="contact-item"><span class="ci-ico">${c.icon}</span><span>${c.label}：<a href="${c.href}" target="_blank" rel="noopener">${c.value}</a></span></div>`).join('');
+    case 'outfits':
+      return head('WARDROBE', '换装', '点一套衣服，岛上的角色会立即换装。') +
+        `<div class="outfit-grid">` + OUTFITS.map(o => `
+          <button class="outfit-card${o.id === currentOutfit ? ' active' : ''}" data-outfit="${o.id}">
+            <span class="outfit-icon">${o.icon}</span>
+            <span class="outfit-copy"><b>${o.name}</b><small>${o.note}</small></span>
+            <span class="outfit-swatches">${o.swatches.map(color => `<i style="background:${color}"></i>`).join('')}</span>
+          </button>`).join('') + `</div>
+          <p class="outfit-tip">✦ 选择会保存在当前浏览器，下次登岛继续穿这一套。</p>`;
     default: return '';
   }
 }
 let panelOpen = false;
 function openPanel(key) {
-  if (!['about','skills','experience','projects','contact'].includes(key)) return;
+  if (!['about','skills','experience','projects','contact','outfits'].includes(key)) return;
   if (rideState) endRide();
+  if (key === 'outfits') {
+    panelOpen = true;
+    cameraMode = 'panel';
+    panelContent.innerHTML = buildPanelHTML(key);
+    panel.classList.add('open');
+    document.querySelectorAll('.dock-btn').forEach(x => x.classList.toggle('active', x.dataset.key === key));
+    areaName.textContent = '旅行衣橱';
+    areaTitle.classList.remove('hidden');
+    setHover(hovered, false); hovered = null;
+    if (entered) {
+      say('挑一套喜欢的岛上穿搭吧～');
+      flyTo(
+        [player.position.x + 7.5, G + 4.6, player.position.z + 8.5],
+        [player.position.x, G + 1.15, player.position.z],
+        850
+      );
+    }
+    return;
+  }
   const idx = ['about','skills','experience','projects','contact'].indexOf(key);
   const b = buildings[idx];
   panelOpen = true;
@@ -373,7 +442,11 @@ function closePanel() {
   if (entered) cameraMode = 'follow';
 }
 $('panelClose').addEventListener('click', closePanel);
-const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系']];
+panelContent.addEventListener('click', e => {
+  const button = e.target.closest('[data-outfit]');
+  if (button) applyOutfit(button.dataset.outfit, true);
+});
+const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系'],['outfits','👗','换装']];
 const dock = $('dock');
 dock.innerHTML = NAV.map(([k,i,t]) => `<button class="dock-btn" data-key="${k}"><span class="ico">${i}</span>${t}</button>`).join('');
 dock.addEventListener('click', e => { const b = e.target.closest('.dock-btn'); if (b) openPanel(b.dataset.key); });
@@ -403,7 +476,7 @@ function drawMinimap() {
     c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
   });
   // 玩家（箭头，随朝向旋转）
-  c.save(); c.translate(player.position.x*S, player.position.z*S); c.rotate(-player.rotation.y);
+  c.save(); c.translate(player.position.x*S, player.position.z*S); c.rotate(Math.PI - player.rotation.y);
   c.fillStyle = '#e8553f'; c.beginPath(); c.moveTo(0,-7); c.lineTo(5,6); c.lineTo(0,3); c.lineTo(-5,6); c.closePath(); c.fill();
   c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke(); c.restore();
   c.restore();
@@ -662,6 +735,26 @@ const RIDES = [
   { id: 'carousel', name: '旋转木马', icon: '🎠', x: 8.6, z: -1.4, r: 3.9 },
   { id: 'bike', name: '自行车', icon: '🚲', x: 8.5, z: 4.5, r: 2.2 }
 ];
+const SEATS = props.benches.map((bench, index) => {
+  const seat = bench.userData.seat;
+  const fx = Math.sin(seat.rot), fz = Math.cos(seat.rot);
+  return {
+    id: `seat-${index}`,
+    kind: 'seat',
+    name: '长椅',
+    icon: '🪑',
+    x: seat.x,
+    z: seat.z,
+    r: 1.9,
+    rot: seat.rot,
+    sitX: seat.x + fx * 0.04,
+    sitZ: seat.z + fz * 0.04,
+    exitX: seat.x + fx * 1.15,
+    exitZ: seat.z + fz * 1.15,
+    model: bench
+  };
+});
+const INTERACTABLES = [...RIDES, ...SEATS];
 let rideState = null;
 const nbIcon = nearBtn.querySelector('.nb-icon');
 const nbHint = nearBtn.querySelector('.nb-text small');
@@ -669,37 +762,57 @@ function setNearButton(icon, name, hint) {
   nbIcon.textContent = icon; nearName.textContent = name; nbHint.textContent = hint;
 }
 // 设施上方的提示标签，让「可以坐上去玩」一眼可见
-for (const r of RIDES) {
+for (const r of INTERACTABLES) {
   const div = document.createElement('div');
   div.className = 'scene-label';
-  div.innerHTML = `<span class="dot"></span>${r.icon} ${r.name} · E 游玩`;
+  div.innerHTML = `<span class="dot"></span>${r.icon} ${r.name} · E ${r.kind === 'seat' ? '坐下' : '游玩'}`;
   const lo = new CSS2DObject(div);
   if (r.id === 'bike' && props.bicycle) {
-    lo.position.set(0, 1.9, 0); props.bicycle.add(lo);  // 车会移动，标签跟着车走
+    lo.position.set(0, 2.35, 0); props.bicycle.add(lo);  // 车会移动，标签跟着车走
+  } else if (r.kind === 'seat') {
+    lo.position.set(0, 1.75, 0); r.model.add(lo);
   } else {
     lo.position.set(r.x, G + 5.0, r.z); islandGroup.add(lo);
   }
 }
 function startRide(r) {
   if (rideState || !r || !entered || panelOpen) return;
-  rideState = { id: r.id, name: r.name, icon: r.icon, t: 0 };
+  rideState = { id: r.id, kind: r.kind || 'ride', name: r.name, icon: r.icon, t: 0 };
   vel.set(0, 0, 0); onGround = true;
   if (r.id === 'bike' && props.bicycle) {
     // 人走到车旁上座，车留在原处，避免整辆车瞬移到玩家脚下
     player.position.x = props.bicycle.position.x;
     player.position.z = props.bicycle.position.z;
     player.rotation.y = props.bicycle.rotation.y;
+  } else if (r.kind === 'seat') {
+    player.position.set(r.sitX, G + 0.04, r.sitZ);
+    player.rotation.y = r.rot;
+    legL.rotation.x = legR.rotation.x = -1.22;
+    armL.rotation.x = armR.rotation.x = 0.08;
   }
-  say(r.id === 'carousel' ? '坐稳咯～旋转木马转起来啦！再按 E 或点按钮下来。' : '骑上小车啦！用 WASD / 摇杆绕岛兜风，按 E 下车。', 4200);
+  const message = r.kind === 'seat'
+    ? '坐下歇一会儿吧～按 E 或点按钮起身。'
+    : r.id === 'carousel'
+      ? '坐稳咯～旋转木马转起来啦！再按 E 或点按钮下来。'
+      : '骑上小车啦！用 WASD / 摇杆绕岛兜风，按 E 下车。';
+  say(message, 4200);
 }
 function endRide() {
   if (!rideState) return;
   const wasBike = rideState.id === 'bike';
+  const wasSeat = rideState.kind === 'seat';
   player.position.y = G;
   if (wasBike && props.bicycle) {
     // 停在车旁边，不把人传送回上车点
     player.position.x = props.bicycle.position.x + Math.sin(player.rotation.y) * 1.2;
     player.position.z = props.bicycle.position.z + Math.cos(player.rotation.y) * 1.2;
+  } else if (wasSeat) {
+    const seat = SEATS.find(s => s.id === rideState.id);
+    if (seat) {
+      player.position.x = seat.exitX;
+      player.position.z = seat.exitZ;
+      player.rotation.y = seat.rot;
+    }
   }
   legL.rotation.x = legR.rotation.x = armL.rotation.x = armR.rotation.x = 0;
   rideState = null;
@@ -708,7 +821,12 @@ function endRide() {
 function updateRide(dt) {
   const st = rideState;
   st.t += dt;
-  if (st.id === 'carousel') {
+  if (st.kind === 'seat') {
+    const seat = SEATS.find(s => s.id === st.id);
+    if (seat) player.position.set(seat.sitX, G + 0.04, seat.sitZ);
+    legL.rotation.x = -1.22; legR.rotation.x = -1.12;
+    armL.rotation.x = armR.rotation.x = 0.08;
+  } else if (st.id === 'carousel') {
     const c = props.carousel;
     if (!c || !c.userData.carousel) return;
     const a = c.userData.carousel.rotation.y;
@@ -773,7 +891,13 @@ function updateNearby() {
   if (rideState) {
     if (nearB) { setHover(nearB, false); nearB = null; }
     nearRide = null;
-    setNearButton(rideState.icon, '正在玩 · ' + rideState.name, '点击 / E 结束游玩');
+    const activeHint = rideState.kind === 'seat'
+      ? '点击 / E 起身'
+      : rideState.id === 'bike'
+        ? '点击 / E 下车'
+        : '点击 / E 结束游玩';
+    const activeName = rideState.kind === 'seat' ? '正在休息 · 长椅' : '正在玩 · ' + rideState.name;
+    setNearButton(rideState.icon, activeName, activeHint);
     nearBtn.classList.add('show');
     return;
   }
@@ -784,7 +908,7 @@ function updateNearby() {
     if (d < minD && d > c.r*0.85) { minD = d; near = buildings[i]; }
   }
   let ride = null, rideD = Infinity;
-  for (const r of RIDES) {
+  for (const r of INTERACTABLES) {
     // 自行车骑走后热点跟着车，不然会出现「车在这、按钮在那」
     const rx = r.id === 'bike' && props.bicycle ? props.bicycle.position.x : r.x;
     const rz = r.id === 'bike' && props.bicycle ? props.bicycle.position.z : r.z;

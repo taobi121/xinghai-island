@@ -514,6 +514,7 @@ function splashTexture() {
 
 export function createProps(islandGroup, emissiveMats, lampLights) {
   const G = ISLAND.groundY;
+  const benches = [];
 
   // 路灯（保持绿顶方灯语言）
   function lamp(x, z) {
@@ -546,17 +547,24 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.55, 0.5), mat(0x4A4038));
       leg.position.set(sx, 0.28, 0); g.add(leg);
     }
+    g.userData.seat = { x, z, rot };
     g.position.set(x, G, z); g.rotation.y = rot; islandGroup.add(g);
+    benches.push(g);
+    return g;
   }
 
   // 自行车（返回整组，并把车轮挂到 userData，供骑行时转动）
   function bicycle(x, z, rot = 0) {
     const g = new THREE.Group();
+    const model = new THREE.Group();
+    // 车轮与车架按 X 轴排布；旋转模型后，外层 group 的 +Z 才是骑行方向。
+    model.rotation.y = Math.PI / 2;
+    g.add(model);
     g.userData.wheels = [];
     const fm = mat(0x3A4A55, { metalness: 0.3, roughness: 0.75 });
     for (const wx of [-0.75, 0.75]) {
       const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 8, 20), fm);
-      wheel.position.set(wx, 0.45, 0); g.add(wheel); g.userData.wheels.push(wheel);
+      wheel.position.set(wx, 0.45, 0); model.add(wheel); g.userData.wheels.push(wheel);
     }
     const frameMat = mat(0xD9534F, { metalness: 0.2, roughness: 0.75 });
     const bars = [[-0.75, 0.45, 0, 0, 0.7, 0], [0, 0.7, 0, 0.75, 0.45, 0], [-0.75, 0.45, 0, 0.75, 0.45, 0], [0, 0.7, 0, -0.2, 1.05, 0]];
@@ -565,8 +573,14 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
       const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, dir.length(), 6), frameMat);
       bar.position.set((x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2);
       bar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
-      g.add(bar);
+      model.add(bar);
     }
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.09, 0.22), mat(0x57453A));
+    seat.position.set(-0.18, 0.91, 0); model.add(seat);
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.52, 8), fm);
+    handle.rotation.x = Math.PI / 2; handle.position.set(0.58, 1.02, 0); model.add(handle);
+    const seatPost = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.28, 8), fm);
+    seatPost.position.set(-0.18, 0.82, 0); model.add(seatPost);
     g.position.set(x, G, z); g.rotation.y = rot; g.scale.setScalar(0.9); islandGroup.add(g);
     return g;
   }
@@ -720,5 +734,5 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
   carousel.rotation.y = -0.3;
   islandGroup.add(carousel);
 
-  return { fountain: f, carousel, bicycle: bike };
+  return { fountain: f, carousel, bicycle: bike, benches };
 }

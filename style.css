@@ -90,7 +90,7 @@ canvas{display:block}
 #jumpBtn{position:absolute;bottom:150px;right:40px;z-index:26;display:none;width:56px;height:56px;font-size:24px;color:#fff;background:linear-gradient(135deg,#e0b354,#bb8a24);border:3px solid rgba(255,255,255,.7);border-radius:50%;box-shadow:var(--shadow);cursor:pointer}
 
 /* ---------- 对话气泡 / 靠近提示 ---------- */
-#speech{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);z-index:24;max-width:min(420px,86vw);padding:12px 20px;background:var(--paper);border:2px solid #fff;border-radius:16px;box-shadow:var(--shadow),0 0 0 3px rgba(212,169,74,.3);font-size:13px;line-height:1.6;color:#3d3020;transition:opacity .35s,transform .35s}
+#speech{position:absolute;bottom:184px;left:50%;transform:translateX(-50%);z-index:32;max-width:min(440px,86vw);padding:12px 20px;background:var(--paper);border:2px solid #fff;border-radius:16px;box-shadow:var(--shadow),0 0 0 3px rgba(212,169,74,.3);font-size:13px;line-height:1.6;color:#3d3020;transition:opacity .35s,transform .35s}
 #speech::after{content:'';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);border:10px solid transparent;border-top-color:#fff;border-bottom:0}
 #speech.hidden{transform:translate(-50%,10px)}
 /* ---------- 靠近建筑：可点击交互按钮（手绘卡片） ---------- */
@@ -169,6 +169,17 @@ canvas{display:block}
 .contact-item{display:flex;align-items:center;gap:12px;padding:13px 15px;background:rgba(255,255,255,.65);border-radius:12px;margin-bottom:10px;font-size:14px}
 .contact-item .ci-ico{font-size:20px}
 .contact-item a{color:#8a6a12;text-decoration:none;font-weight:600;word-break:break-all}
+.outfit-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.outfit-card{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;padding:13px;text-align:left;color:var(--ink);background:rgba(255,255,255,.62);border:2px solid transparent;border-radius:15px;cursor:pointer;transition:transform .18s,background .18s,border-color .18s}
+.outfit-card:hover{transform:translateY(-2px);background:var(--gold-light)}
+.outfit-card.active{border-color:#d6a73c;background:rgba(247,226,160,.45);box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)}
+.outfit-icon{width:42px;height:42px;display:grid;place-items:center;font-size:22px;background:rgba(255,255,255,.76);border-radius:13px}
+.outfit-copy{display:flex;min-width:0;flex-direction:column;gap:3px}
+.outfit-copy b{font-size:14px;color:#3d3020}
+.outfit-copy small{font-size:11px;line-height:1.5;color:var(--ink-soft)}
+.outfit-swatches{display:flex;gap:4px}
+.outfit-swatches i{display:block;width:13px;height:22px;border:2px solid rgba(255,255,255,.88);border-radius:6px;box-shadow:0 1px 3px rgba(50,40,20,.18)}
+.outfit-tip{margin-top:18px;font-size:11px;line-height:1.7;color:var(--ink-soft)}
 
 /* ---------- 帮助弹层 ---------- */
 .modal{position:absolute;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(30,50,60,.35);backdrop-filter:blur(3px);transition:opacity .3s}
@@ -213,6 +224,7 @@ canvas{display:block}
   #minimap{width:96px;height:96px;bottom:76px;left:12px}
   #minimapCanvas{width:96px;height:96px}
   .minimap-label{font-size:8px}
+  #speech{bottom:238px;max-width:calc(100vw - 30px);font-size:12px;padding:10px 15px}
   /* 底部导航：单独一行居中，缩小到 5 个按钮可完整放下 */
   #dock{bottom:12px;left:50%;max-width:calc(100vw - 24px);width:max-content;gap:2px;padding:5px 6px;justify-content:center}
   .dock-btn{flex-direction:column;gap:2px;padding:5px 8px;font-size:10px;min-width:0}
