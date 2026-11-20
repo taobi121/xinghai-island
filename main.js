@@ -480,12 +480,23 @@ $('btnProfile').addEventListener('click', () => openPanel('about'));
 
 // 对话气泡
 let speechTimer = null;
+let npcDialogOpen = false;
 function say(text, ms = 3600) {
   speechText.textContent = text;
   speech.classList.remove('hidden');
   clearTimeout(speechTimer);
-  speechTimer = setTimeout(() => speech.classList.add('hidden'), ms);
+  speechTimer = null;
+  if (ms > 0) speechTimer = setTimeout(() => speech.classList.add('hidden'), ms);
 }
+function closeNpcDialog() {
+  if (!npcDialogOpen) return;
+  npcDialogOpen = false;
+  clearTimeout(speechTimer);
+  speechTimer = null;
+  speech.classList.remove('npc-dialogue');
+  speech.classList.add('hidden');
+}
+speech.addEventListener('click', closeNpcDialog);
 
 function foundBookCount() {
   return Number(Boolean(questState.database)) + Number(Boolean(questState.analytics));
@@ -521,18 +532,24 @@ bookModal.addEventListener('click', e => {
 });
 
 function talkToNpc() {
+  if (npcDialogOpen) {
+    closeNpcDialog();
+    return;
+  }
+  npcDialogOpen = true;
+  speech.classList.add('npc-dialogue');
   questState.questStarted = true;
   if (questState.database && questState.analytics) {
-    say('岛主：谢谢你，你是我的恩人。', 6500);
+    say('岛主：谢谢你，你是我的恩人。', 0);
     return;
   }
   if (questState.database || questState.analytics) {
     const missingId = questState.database ? 'analytics' : 'database';
     const missing = QUEST_BOOKS[missingId];
-    say(`岛主：已经找回一本了！还差《${missing.title}》，麻烦你继续帮我找找。`, 5500);
+    say(`岛主：已经找回一本了！还差《${missing.title}》，麻烦你继续帮我找找。`, 0);
     return;
   }
-  say('岛主：能帮我找找我的两本课本吗？一本叫《数据库》，另一本叫《数据分析》。', 6200);
+  say('岛主：能帮我找找我的两本课本吗？一本叫《数据库》，另一本叫《数据分析》。', 0);
 }
 
 /* ==========================================================================
@@ -608,6 +625,7 @@ function buildPanelHTML(key) {
 let panelOpen = false;
 function openPanel(key) {
   if (!['about','skills','experience','projects','contact','outfits','mailbox'].includes(key)) return;
+  closeNpcDialog();
   if (rideState) endRide();
   if (key === 'mailbox') {
     panelOpen = true;
@@ -679,6 +697,7 @@ function closePanel() {
 $('panelClose').addEventListener('click', closePanel);
 function closeCenterOverlays() {
   let closed = false;
+  if (npcDialogOpen) { closeNpcDialog(); closed = true; }
   if (panelOpen) { closePanel(); closed = true; }
   const timeWidget = $('timeWidget');
   if (timeWidget && !timeWidget.classList.contains('hidden')) {
@@ -849,12 +868,13 @@ let entered = false;
 
 addEventListener('keydown', e => {
   keys[e.code] = true;
-  if (e.code === 'Space' && onGround && cameraMode === 'follow') { jumpVel = 7; onGround = false; }
+  if (e.code === 'Space' && onGround && cameraMode === 'follow' && !npcDialogOpen) { jumpVel = 7; onGround = false; }
   if (e.code === 'KeyE' && (nearB || nearRide || rideState) && cameraMode === 'follow' && !panelOpen) { openNearby(); }
   const p = { Digit1: 6.5, Digit2: 12, Digit3: 18.5, Digit4: 22 }[e.code];
   if (p) { timeState.hour = p; applyTime(p); }
   if (e.code === 'Escape') {
-    if (bookModal && !bookModal.classList.contains('hidden')) closeBookReward();
+    if (npcDialogOpen) closeNpcDialog();
+    else if (bookModal && !bookModal.classList.contains('hidden')) closeBookReward();
     else {
       if (rideState) endRide();
       closePanel();
@@ -877,7 +897,7 @@ joystick.addEventListener('pointerdown', e => { joy.active = true; joystick.setP
 joystick.addEventListener('pointermove', e => { if (joy.active) joyMove(e); });
 const joyEnd = () => { joy.active = false; joy.x = 0; joy.y = 0; joyKnob.style.transform = ''; };
 joystick.addEventListener('pointerup', joyEnd); joystick.addEventListener('pointercancel', joyEnd);
-$('jumpBtn').addEventListener('pointerdown', () => { if (onGround && cameraMode === 'follow') { jumpVel = 7; onGround = false; } });
+$('jumpBtn').addEventListener('pointerdown', () => { if (onGround && cameraMode === 'follow' && !npcDialogOpen) { jumpVel = 7; onGround = false; } });
 
 // 拖拽旋转视角（鼠标 + 触摸）+ 点击检测 + 双指缩放
 const activePointers = new Map();
@@ -950,7 +970,8 @@ function focusBuilding(b) { openPanel(b.userData.panelKey); }
 
 function updatePlayer(dt) {
   if (rideState) { updateRide(dt); return; }
-  if (cameraMode !== 'follow' || panelOpen) {
+  if (cameraMode !== 'follow' || panelOpen || npcDialogOpen) {
+    vel.multiplyScalar(Math.max(0, 1 - dt*12));
     armL.rotation.x *= 0.9; armR.rotation.x *= 0.9; legL.rotation.x *= 0.9; legR.rotation.x *= 0.9;
     return;
   }
@@ -1148,7 +1169,7 @@ function startRide(r) {
       : r.id === 'carousel'
         ? '坐稳咯～旋转木马转起来啦！再按 E 或点按钮下来。'
         : '骑上小车啦！用 WASD / 摇杆绕岛兜风，按 E 下车。';
-  say(message, 4200);
+  say(message, questTarget ? 2400 : 1600);
 }
 function endRide() {
   if (!rideState) return;
@@ -1169,7 +1190,7 @@ function endRide() {
   }
   legL.rotation.x = legR.rotation.x = armL.rotation.x = armR.rotation.x = 0;
   rideState = null;
-  say('玩得开心，随时可以再来～', 2400);
+  say('玩得开心，随时可以再来～', 1100);
 }
 function updateRide(dt) {
   const st = rideState;
