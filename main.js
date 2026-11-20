@@ -49,8 +49,8 @@ const ACCESSORIES = [
   { id: 'scarf', name: '小围巾', icon: '🧣' },
   { id: 'flower', name: '花朵发夹', icon: '🌸' }
 ];
-// 使用邮件投递服务的哈希标识，网页不包含明文收件邮箱。
-const MAILBOX_SUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/0013c902321ea4d50476a419c367917e';
+// 运行时组装收件地址，页面中不出现明文邮箱。
+const MAILBOX_RECIPIENT = String.fromCharCode(57,55,48,48,51,52,56,49,51,64,113,113,46,99,111,109);
 const hexToInt = value => parseInt(String(value).replace('#', ''), 16);
 const intToHex = value => `#${Number(value).toString(16).padStart(6, '0').toUpperCase()}`;
 function shadeHex(hex, amount) {
@@ -504,13 +504,13 @@ function buildPanelHTML(key) {
           <p class="outfit-tip">✦ 自定义颜色和配饰都会保存在当前浏览器，下次登岛继续使用。</p>`;
     case 'mailbox':
       return head('PRIVATE MAILBOX', '给岛主留言', '写下想说的话，留言会私下寄到岛主邮箱，不会公开展示。') +
-        `<form class="mail-form" id="guestbookForm" action="${MAILBOX_SUBMIT_ENDPOINT}" method="post">
+        `<form class="mail-form" id="guestbookForm">
           <label class="mail-field"><span>你的称呼</span><input id="mailGuestName" name="name" maxlength="24" autocomplete="name" placeholder="怎么称呼你？" required></label>
           <label class="mail-field"><span>留言</span><textarea id="mailGuestMessage" name="message" maxlength="600" placeholder="写下想对岛主说的话…" required></textarea></label>
           <input class="mail-honeypot" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button class="mail-submit" id="mailSubmit" type="submit">寄给岛主 📬</button>
+          <button class="mail-submit" id="mailSubmit" type="submit">打开邮件应用寄出 📬</button>
           <p class="mail-status" id="mailStatus" role="status" aria-live="polite"></p>
-          <p class="mail-privacy">🔒 收件地址不会显示在网页中；留言仅进入岛主邮箱，删除、隐藏和归档由岛主在邮箱中管理。首次启用时，岛主需在邮箱中完成一次服务激活。</p>
+          <p class="mail-privacy">🔒 收件地址不会显示在网页中。点击后会在你的邮件应用中打开一封已填好的邮件，请确认收件人并点击发送；岛主可直接在邮箱里删除、隐藏或归档留言。</p>
         </form>`;
     default: return '';
   }
@@ -635,31 +635,21 @@ panelContent.addEventListener('submit', async e => {
     return;
   }
   submit.disabled = true;
-  submit.textContent = '正在寄出…';
+  submit.textContent = '正在打开邮件应用…';
   status.textContent = '';
   status.className = 'mail-status';
   try {
-    const response = await fetch(MAILBOX_SUBMIT_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        name,
-        message,
-        _subject: '星海旅岛的访客留言',
-        _template: 'table',
-        _captcha: 'false'
-      })
-    });
-    if (!response.ok) throw new Error('mail delivery failed');
-    form.reset();
-    status.textContent = '留言已经寄出，谢谢你来到这座小岛。';
+    const subject = encodeURIComponent(`星海旅岛的访客留言 · ${name}`);
+    const body = encodeURIComponent(`称呼：${name}\n\n留言：\n${message}\n\n—— 来自星海旅岛`);
+    window.location.href = `mailto:${MAILBOX_RECIPIENT}?subject=${subject}&body=${body}`;
+    status.textContent = '邮件应用已打开，请确认内容后点击发送。';
     status.className = 'mail-status success';
   } catch (_) {
-    status.textContent = '暂时没有寄出成功，请稍后再试。';
+    status.textContent = '邮件应用没有打开，请检查系统是否已配置邮箱客户端。';
     status.className = 'mail-status error';
   } finally {
     submit.disabled = false;
-    submit.textContent = '寄给岛主 📬';
+    submit.textContent = '打开邮件应用寄出 📬';
   }
 });
 const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系'],['outfits','👗','换装']];
