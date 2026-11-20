@@ -907,7 +907,7 @@ function updateInteractionLabels() {
     const x = r.id === 'bike' && props.bicycle ? props.bicycle.position.x : r.x;
     const z = r.id === 'bike' && props.bicycle ? props.bicycle.position.z : r.z;
     const distance = Math.hypot(player.position.x - x, player.position.z - z);
-    const labelRange = r.kind === 'seat' ? 3.7 : r.id === 'carousel' ? 6.6 : 4.4;
+    const labelRange = r.kind === 'seat' ? 2.8 : r.id === 'carousel' ? 5.2 : 3.0;
     r.labelNode.visible = entered && !panelOpen && !riding && distance <= labelRange;
   }
 }
