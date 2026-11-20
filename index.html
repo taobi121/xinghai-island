@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html data-page-node-id="LE0jPxHx2UNZyFv9xKbUXV" lang="zh-CN">
+<head data-page-node-id="7cDI6pLZfiShpPVyfGcIIt">
+<meta data-page-node-id="9tG6b9MduI1C2unJNB5IfG" charset="UTF-8">
+<meta data-page-node-id="35TBWGYcQTsrNs8xLXfU0k" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title data-page-node-id="dHZNWpJkjejH5umZbadVOp" data-pnid-children="0PBxn8eOIL6rsCLEFo1leg">星海旅岛 · 我的 3D 小岛简历</title>
+<link data-page-node-id="AX7tjJNQQELUN0vvublhXh" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%9D%EF%B8%8F%3C/text%3E%3C/svg%3E" rel="icon">
+<link data-page-node-id="7srTRCNqhIyP8KZSWCIFht" href="./style.css" rel="stylesheet">
+<script data-page-node-id="OxpXGlpUvzyx18fxhIJ5lh" data-pnid-children="mIHNig0moDDoWaRKt5snuB" type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body data-page-node-id="WR2LEmoEHqXYuftqpvSoL7">
+<div data-page-node-id="PoB8kPNKXCQd2bRHPX9Bu2" id="app">
+  <div data-page-node-id="NhhD4oOSWbAQZveG6oSIdP" id="scene-container"></div>
+
+  <!--pnid:ET7IaPKgUBiDezSELcHuef--><!-- 加载 -->
+  <div data-page-node-id="Caaon7iQ2dLK4X2lW8gKVv" id="loading">
+    <div data-page-node-id="sDgvf9OSv9VMk6sfZC5v71" class="spinner"></div>
+    <p data-page-node-id="mq1Q63bai4DAu5oFpXoowz" id="loadingText"><!--pnid:2ubU3ceS9ChFosNYBF1Vzm-->正在生成小岛…</p>
+  </div>
+
+  <!--pnid:HuiIFZE81YAIYOzwDvD0Xi--><!-- 开场（参考风格卡片） -->
+  <div data-page-node-id="VCDcFpvbpq3eJLm89A6kNx" id="intro">
+    <div data-page-node-id="hIiUvyjYNaaEyWEwfEFvgv" class="intro-card">
+      <div data-page-node-id="XIHB1jfsm8TKBq0LRzjYfw" class="intro-logo" id="introLogo"><!--pnid:eiWOug5uf3chtxLQBuC4JF-->🏝️</div>
+      <h1 data-page-node-id="ee0KDSWobnDnK4o1xcN0Zv" id="introName"><!--pnid:y1TevfRAewP612NSvR2880-->星海旅岛</h1>
+      <p data-page-node-id="y4UmjMUesTg7DXi8ciLDyi" class="intro-tagline" id="introTagline"><!--pnid:adGLrQkQZumhd2mYM4KKua-->一个藏在海上的个人简历小岛</p>
+      <div data-page-node-id="SFrteW1EgJW6zlFRCA30nN" class="intro-divider"></div>
+      <p data-page-node-id="TCW4HDILt9WXWNTUnExbuM" class="intro-desc" id="introDesc"><!--pnid:gEzmUv1Y3gWdVqzjpSXefu-->点击「登岛游览」，用 WASD 或摇杆自由探索。<br data-page-node-id="wwxWTBlw8ZyaNiTRL3GaT2"><!--pnid:0hkmfxS4a6ICeQY2bbkLnJ-->走近建筑，解锁关于我的一切。</p>
+      <button data-page-node-id="tkFa27JuKSUAtRBx0CeIQY" id="enterBtn"><!--pnid:JAxqUWU4CpCEOQakdoN9QW-->登岛游览 →</button>
+      <div data-page-node-id="rLSgZHpIDaJ9G4uDGogoCs" class="intro-foot"><!--pnid:R6C9Xpxio9oszqZbfDRvGm-->✦ 建议使用桌面端获得最佳体验 ✦</div>
+    </div>
+  </div>
+
+  <!--pnid:tJKedQt8Zp9HLF8fb9vbJa--><!-- ============ 游戏 HUD ============ -->
+
+  <!--pnid:QKlvPgSeWpa67QG3V4Kqmc--><!-- 顶部中央：当前区域标题牌 -->
+  <div data-page-node-id="y26zBUk0rguSeUOMKCic23" class="hidden" id="areaTitle">
+    <span data-page-node-id="5ULnqXvTR0TInUXF5zFUOc" class="area-icon"><!--pnid:BZAyBGmMnR3A3LkGw90NdI-->📍</span>
+    <span data-page-node-id="yRXPyqNXvChawjQQ6rfT15" id="areaName"><!--pnid:byoCNnxMrm0tVoGinSQlpc-->欢迎登岛</span>
+  </div>
+
+  <!--pnid:kby0yzRVeJbomsvUJcC2nJ--><!-- 顶部右侧：圆形图标按钮组 -->
+  <div data-page-node-id="ONRuPPMPC8YY8MX7kgfr6Q" id="iconBar">
+    <button data-page-node-id="DM1MRGO211XgqaIoJAK9tc" class="icon-btn" id="btnProfile" title="个人信息"><!--pnid:mxWUKK79CbSX0MP9MmOidl-->👤</button>
+    <button data-page-node-id="gkXOB7U3KrtviekI82gyjT" class="icon-btn" id="btnTime" title="昼夜切换"><!--pnid:JLXyFM33krt4FPnt4oCwCF-->🌓</button>
+    <button data-page-node-id="fvqUhfadGwYXMx5AzO8poe" class="icon-btn muted" id="btnMusic" title="背景音乐（点击播放/静音）"><!--pnid:m1CyaOmA84vogXfLyT5HFJ-->🔇</button>
+    <button data-page-node-id="LGNxKrMiW2L2hwyoxQqVsE" class="icon-btn" id="btnHelp" title="操作说明"><!--pnid:r4SrZXsUh7F3ZW1pxjshMw-->❓</button>
+  </div>
+
+  <!--pnid:HUukDj6jUNbnitkTA8fGDJ--><!-- 左上：岛名徽标 -->
+  <div data-page-node-id="tJE7OXFCHnQgOTTi5z0OaL" id="brandBadge">
+    <span data-page-node-id="HYxSFqCedxyoVS2LBZ7lG2" id="brandIcon"><!--pnid:DRLhdQ1alLZrkzHWCik15q-->🏝️</span>
+    <span data-page-node-id="KzBRJ8Rjrj1q20b2RaHhLU" id="brandName"><!--pnid:8N2Rcf11pcFjeyHDvwyVhK-->星海旅岛</span>
+  </div>
+
+  <!--pnid:8a2VGgvejkolzDDMhu6NoJ--><!-- 时间控制弹层 -->
+  <div data-page-node-id="ucf2K4ZWoAjnRPurG12vrv" class="hidden" id="timeWidget">
+    <div data-page-node-id="IjiTwcVvey93Ckn1U3tXya" class="time-head">
+      <span data-page-node-id="MI5lMuynqflzz9iYfwl91p" class="time-icon" id="timeIcon"><!--pnid:YdgKQMZIz0tL29Tgo1CeWe-->☀️</span>
+      <span data-page-node-id="t97JO5YjIuvmafF3ed2SFV" class="time-label" id="timeLabel"><!--pnid:bdiWE2n2ZB57yKmltA74vv-->白天 12:00</span>
+      <button data-page-node-id="XI3eGDy66SW1Ze7CJ2w4ew" id="timeToggle" title="播放/暂停"><!--pnid:dnnt2aG6mSgesti3z9SifP-->⏸</button>
+    </div>
+    <input data-page-node-id="hTes2kNli2bpLAI33BoeFX" id="timeSlider" max="24" min="0" step="0.05" type="range" value="12">
+    <div data-page-node-id="ENHn366HCwD8YKnH2Rdxkr" class="time-marks"><span data-page-node-id="9OlCPjqtMDiRx68ifMrO4M"><!--pnid:XdUDWg2yW6Abd0J4SKoiMz-->00</span><span data-page-node-id="xd3EOsQHb4LdkgP3Z3z2D3"><!--pnid:d3flpsnedO7OPzDfvgEJw6-->06</span><span data-page-node-id="fQaqCvWUeQsSIK7IG0M2wv"><!--pnid:YEyaCfG7MzrpVh9YLsUAok-->12</span><span data-page-node-id="ioMUloeUWDL6sGywiUy2Xc"><!--pnid:KDQ3tR7sbDpMm9XLElWigq-->18</span><span data-page-node-id="ZrfCwfjrX83wi2jFk8LzV0"><!--pnid:cvuXfvSctyjoH90f0LKmoC-->24</span></div>
+    <div data-page-node-id="PyGnsgWE4F3KfGceXtNyLj" class="time-presets">
+      <button data-page-node-id="QsZhOIAP5mb32o03lZJsc4" data-hour="6.5"><!--pnid:leuXPrVUE1M8LWEsQNvPPq-->🌅 清晨</button>
+      <button data-page-node-id="qIDS0jNn0cIv4YnMU05iVs" data-hour="12"><!--pnid:Eg9OpUqB4zBKj8wvAjrHPb-->☀️ 正午</button>
+      <button data-page-node-id="c52VoBChfA9VrE7dpaoDxy" data-hour="18.5"><!--pnid:T6lXNFC7n1JnI0ZSGkfY1E-->🌇 黄昏</button>
+      <button data-page-node-id="OqtGl75M5iqSlbFJrM6brx" data-hour="22"><!--pnid:w5kuSKoKHLOo64pqsboF4M-->🌙 夜晚</button>
+    </div>
+  </div>
+
+  <!--pnid:Hi77CbcCccdXCxDLlj5TWL--><!-- 左下：小地图 -->
+  <div data-page-node-id="Jotez8wFaOz3VQp6LnAPG8" id="minimap">
+    <canvas data-page-node-id="s0qCRD3uyJqLFZp9cQgj0U" height="220" id="minimapCanvas" width="220"></canvas>
+    <div data-page-node-id="DcVSxIo1t8u8kabh1sGG7V" class="minimap-label"><!--pnid:kfp6rGH47iQivhQyfjLpuZ-->🗺️ 小地图</div>
+  </div>
+
+  <!--pnid:atWfM0SDA1BXV36ccy5PRh--><!-- 右下：虚拟摇杆 -->
+  <div data-page-node-id="K8SChVuaCCFIffoKnXP0dZ" id="joystick">
+    <div data-page-node-id="xXewAejR646ywkgHLnEPFU" class="joy-base"><div data-page-node-id="PQnzTCaUnJBiTefhAQqs1n" class="joy-knob" id="joyKnob"></div></div>
+  </div>
+  <button data-page-node-id="sg8GlVuxwbloB4ve2tg0P3" aria-label="跳跃" id="jumpBtn"><!--pnid:71a1ALv141GRXuWkV4s8WF-->⤒</button>
+
+  <!--pnid:ryRTh7vgBCRUQLm72OpdLy--><!-- 对话气泡 -->
+  <div data-page-node-id="jogn4ArKXlCPPqHzPuxEID" class="hidden" id="speech"><span data-page-node-id="eZXbFUcDEJ8NlfE0xC9NLT" id="speechText"></span></div>
+
+  <!--pnid:bxv6EAJpwmRH4yLx7gjyZi--><!-- 靠近建筑时的可点击交互按钮 -->
+  <button data-page-node-id="V5BbtxLluKUb8CLL5pySpU" aria-label="查看建筑" id="nearBtn">
+    <span data-page-node-id="eYu4pIugPtnR53T7lgJ5NF" class="nb-icon"><!--pnid:HDND6THMLmESwDYfLUiDHc-->👆</span>
+    <span data-page-node-id="W2JGK0Oo2xPrEtcE3gurGH" class="nb-text"><b data-page-node-id="FSlrBn4wuqAQBfanNTefdh" id="nearName"><!--pnid:1FsR6XMOqzAgCi4H6SkQss-->建筑</b><small data-page-node-id="3KySYpjYTaczeTfBAKTFKT"><!--pnid:pzWPyctdSJ5ZLSPS6yFIjB-->点击查看详情</small></span>
+    <span data-page-node-id="b2C3RAbUicnjKge6KrJeYT" class="nb-key"><!--pnid:5mfjUdE0HRORxIsQEa6zPf-->E</span>
+  </button>
+
+  <!--pnid:yKOoCgmfVAIqCZC4vDGwj2--><!-- 底部中央：功能标签栏 -->
+  <nav data-page-node-id="ydOFB4TRl0nTBnyms4eLf5" aria-label="简历导航" id="dock"></nav>
+
+  <!--pnid:bFtkKXfP5fjxW6YvazUj9d--><!-- 音乐播放器 -->
+  <div data-page-node-id="lpXjDa01yXpD64EZYDJMRS" id="musicPlayer">
+    <button data-page-node-id="UNRlwJNZ0uosd2Bn6nRHNF" id="musicPlay"><!--pnid:0S7RrtQqP9aFMCCfdydz5B-->▶</button>
+    <div data-page-node-id="EOpRCtwU22zKhL8qMIspm9" class="music-cover"><!--pnid:Y16oi92Yvgj6ieT4IR2CtT-->🎵</div>
+    <div data-page-node-id="X7upML5fQzG6ULxAw5s712" class="music-info">
+      <div data-page-node-id="bLZer1pkqt6lb2Hc6CGKiH" class="music-title" id="musicTitle"><!--pnid:30g75cdmWZj99hA1JXSouJ-->Island Breeze</div>
+      <div data-page-node-id="bRbGm8lQJMsU2R3uNASd4a" class="music-bar"><div data-page-node-id="8xR92sNDJciyznWUzqsPjz" class="music-progress" id="musicProgress"></div></div>
+    </div>
+    <span data-page-node-id="GxtsTnTyPk3hruXZwFJeDR" class="music-vol" id="musicVol"><!--pnid:oDSk0bAcAt5lBy0H57kj2a-->🔇</span>
+  </div>
+
+  <!--pnid:ofoJdpEFgfkkey8Oezjvjc--><!-- 侧边信息面板 -->
+  <aside data-page-node-id="Nc0saEJAWhcqQO23xfI1eU" aria-live="polite" id="panel">
+    <button data-page-node-id="ngM2gq86XMtJpW7zccUmuq" aria-label="关闭" id="panelClose"><!--pnid:QRlsXVJGSmzEEUawysciJ1-->✕</button>
+    <div data-page-node-id="UrIUaYKo84F1sIntRFnx27" id="panelContent"></div>
+  </aside>
+
+  <!--pnid:FMtkwnSZDvlMlT64Wgvblf--><!-- 帮助弹层 -->
+  <div data-page-node-id="8PsidxFMzdh9y8ulo2tlAq" class="modal hidden" id="helpModal">
+    <div data-page-node-id="mOyALwl1EZoXjj1iDpJ3a1" class="modal-card">
+      <h2 data-page-node-id="uHsIn9cIw8S9NTI7rmQJkY"><!--pnid:K3ArovDJPvXL9ovG0917u5-->操作说明</h2>
+      <ul data-page-node-id="aVBbRgPI3kwzTQNE4M7ryD">
+        <li data-page-node-id="vR02X05yMP2wgmfcpPZVoq"><b data-page-node-id="TtztoiuVE4qHkf8W4YXfwg"><!--pnid:lZadYSEuAM0Gz970SSWoKP-->WASD / 方向键 / 摇杆</b><!--pnid:ye3NFjEr1Nwun5RggehfYu--> — 自由移动</li>
+        <li data-page-node-id="dNPBGACHnStELDqVKa0Flz"><b data-page-node-id="A9TE5ZmIMLpHjMgtDX29XM"><!--pnid:Ph95Fo4uP8jACTYFYeCbh7-->空格 / ⤒</b><!--pnid:IbS2bcTpa1krUVfOE63jI5--> — 跳跃</li>
+        <li data-page-node-id="Dpu2SsJUZjKRysJG80hb55"><b data-page-node-id="HKFC97TfcsMHlxlSrgVsfc"><!--pnid:xOMtudDi30jmdiQRFMb7Od-->鼠标 / 单指拖拽</b><!--pnid:rOpaWRSOVBwiYARntTP7c5--> — 旋转视角</li>
+        <li data-page-node-id="JMMLp9LWC6WMhBZ1ZNGsNJ"><b data-page-node-id="VZXCKlA5DY5OZhaGLyKKbG"><!--pnid:0j2wj1HCHh1oyiHzvn9VB0-->滚轮 / 双指捏合</b><!--pnid:M0FLzqXA2YGrmTFytHEuol--> — 缩放远近</li>
+        <li data-page-node-id="TuOSAZDN3P92uKE7ncgRjA"><b data-page-node-id="rvdhPChwlewX6OSSIS4MXf"><!--pnid:qvPlMI0UYoMZT8oOdzsKA2-->走近建筑 · 点击按钮 / E</b><!--pnid:iTx3afOwGGsSTWnfgaaBan--> — 查看详情卡</li>
+        <li data-page-node-id="KbJXhOY5amSlsyxjyq1LXX"><b data-page-node-id="acNkaCRp3oaixqTldcbmwr"><!--pnid:H1Szfon0BZIgbC1wjUe9bY-->走近旋转木马 / 自行车 · 点击按钮 / E</b><!--pnid:1dcjTL9SLToya8NSOflhQ8--> — 坐上去游玩（自行车可用 WASD 骑行），再按一次下来</li>
+        <li data-page-node-id="HPXcc39bnwHJLoBAfz6KiS"><b data-page-node-id="HrjUUpSLhWLTbfTTSlsOgp"><!--pnid:RaHS6TPaxVRoukvpMuY97b-->数字键 1-4 / 🌓</b><!--pnid:CGqZgZ2EJmZ0xNM9XTvvm4--> — 切换昼夜</li>
+      </ul>
+      <button data-page-node-id="yDo7Q4y3HfMCd5XHxTbSz5" id="helpClose"><!--pnid:yIhCDgr0EbmGObvETnayCS-->知道啦</button>
+    </div>
+  </div>
+</div>
+<script data-page-node-id="CnOpe8yJSDrbL46FqIFvCs" src="./main.js" type="module"></script>
+</body>
+</html>
