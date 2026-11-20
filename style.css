@@ -195,6 +195,19 @@ canvas{display:block}
 .accessory-chip:hover{transform:translateY(-2px);background:var(--gold-light)}
 .accessory-chip.active{color:#6b4d17;background:rgba(247,226,160,.72);border-color:#d6a73c;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 .accessory-chip span{font-size:15px}
+.mail-form{display:flex;flex-direction:column;gap:15px}
+.mail-field{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:800;color:#5a4838}
+.mail-field input,.mail-field textarea{width:100%;padding:11px 13px;font:inherit;font-size:13px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.74);border:1px solid rgba(212,169,74,.34);border-radius:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.mail-field input:focus,.mail-field textarea:focus{border-color:#d2a13b;box-shadow:0 0 0 3px rgba(232,192,106,.18)}
+.mail-field textarea{min-height:148px;resize:vertical;line-height:1.65}
+.mail-honeypot{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.mail-submit{width:100%;padding:12px 18px;font:inherit;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(135deg,#e0b354,#bb8a24);border:2px solid rgba(255,255,255,.55);border-radius:30px;cursor:pointer;box-shadow:0 4px 0 #a97a1c;transition:transform .18s,opacity .18s}
+.mail-submit:hover{transform:translateY(-2px)}
+.mail-submit:disabled{opacity:.58;cursor:wait;transform:none}
+.mail-status{min-height:20px;font-size:12px;line-height:1.6;color:var(--ink-soft)}
+.mail-status.success{color:#4d7f55}
+.mail-status.error{color:#b24d3d}
+.mail-privacy{padding:12px 14px;font-size:11px;line-height:1.7;color:#76644f;background:rgba(232,192,106,.12);border-radius:13px}
 
 /* ---------- 帮助弹层 ---------- */
 .modal{position:absolute;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(30,50,60,.35);backdrop-filter:blur(3px);transition:opacity .3s}

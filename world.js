@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PALETTE, mat, texMat, grassTexture, sandTexture, brickTexture, stoneTexture, woodTexture, glassTexture, pathTexture, cobbleTexture, waterFoamTexture } from './textures.js?v=20261120b';
-import { blossomCrown, umbrellaCanopy, organicCyl, lathe, roundedBox } from './geo.js?v=20261120g';
+import { blossomCrown, umbrellaCanopy, organicCyl, lathe, roundedBox } from './geo.js?v=20261120h';
 import { buildCarouselPavilion } from './buildings.js';
 
 const clamp = THREE.MathUtils.clamp;
@@ -585,6 +585,34 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
     return g;
   }
 
+  // 码头旁的实体留言箱：访客可在这里写下私密留言
+  function mailbox(x, z, rot = 0) {
+    const g = new THREE.Group();
+    const postMat = mat(0x6B4B36, { roughness: 0.92 });
+    const boxMat = mat(0xDF735C, { roughness: 0.82 });
+    const trimMat = mat(0xFFF2D8, { roughness: 0.88 });
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.1, 1.05, 10), postMat);
+    post.position.y = 0.52; post.castShadow = true; g.add(post);
+    g.add(roundedBox(0.66, 0.42, 0.46, 0.1, boxMat, { y: 1.2 }));
+    const curvedTop = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.33, 0.33, 0.46, 20, 1, false, 0, Math.PI),
+      boxMat
+    );
+    curvedTop.rotation.x = Math.PI / 2;
+    curvedTop.position.y = 1.41;
+    curvedTop.castShadow = true;
+    g.add(curvedTop);
+    g.add(roundedBox(0.53, 0.3, 0.035, 0.06, trimMat, { y: 1.19, z: 0.242, shadow: false }));
+    g.add(roundedBox(0.34, 0.045, 0.025, 0.02, boxMat, { y: 1.25, z: 0.266, shadow: false }));
+    g.add(roundedBox(0.22, 0.13, 0.012, 0.025, boxMat, { y: 1.13, z: 0.267, shadow: false }));
+    g.add(roundedBox(0.12, 0.24, 0.08, 0.04, trimMat, { x: 0.39, y: 1.42, z: 0, rz: -0.2 }));
+    const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.42, 8), trimMat);
+    flagPole.position.set(0.42, 1.5, 0); g.add(flagPole);
+    g.add(roundedBox(0.16, 0.1, 0.05, 0.02, trimMat, { x: 0.5, y: 1.61, z: 0, shadow: false }));
+    g.position.set(x, G, z); g.rotation.y = rot; islandGroup.add(g);
+    return g;
+  }
+
   /* ---------- 喷泉（视觉焦点）：分段石池 + 3 层波浪水盘 + 花苞雕塑 + 水花 ---------- */
   function fountain(x, z) {
     const g = new THREE.Group();
@@ -725,6 +753,7 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
   lamp(-4, 6); lamp(4, 6); lamp(-4, -6); lamp(4, -6);
   bench(-7, 3, 0.5); bench(7, 3, -0.5);
   const bike = bicycle(2.2, 15.8, 0.3);
+  const mail = mailbox(-2.3, 15.2, -0.25);
   const f = fountain(0, 0);
   // 版本 A 的罗马拱门遮挡码头到喷泉的视线，参考图中不存在，B 版美术层去掉（无碰撞/布局影响）
 
@@ -734,5 +763,5 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
   carousel.rotation.y = -0.3;
   islandGroup.add(carousel);
 
-  return { fountain: f, carousel, bicycle: bike, benches };
+  return { fountain: f, carousel, bicycle: bike, benches, mailbox: mail };
 }

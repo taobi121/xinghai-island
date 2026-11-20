@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RESUME } from './resume.js';
-import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120g';
+import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120h';
 import { buildCottage, buildCrystalTower, buildBrickHall, buildGlassTower, buildPostTower } from './buildings.js';
 import { PALETTE } from './textures.js?v=20261120b';
 import { createPlayer } from './character.js?v=20261120b';
@@ -49,6 +49,8 @@ const ACCESSORIES = [
   { id: 'scarf', name: '小围巾', icon: '🧣' },
   { id: 'flower', name: '花朵发夹', icon: '🌸' }
 ];
+// 使用邮件投递服务的哈希标识，网页不包含明文收件邮箱。
+const MAILBOX_SUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/0013c902321ea4d50476a419c367917e';
 const hexToInt = value => parseInt(String(value).replace('#', ''), 16);
 const intToHex = value => `#${Number(value).toString(16).padStart(6, '0').toUpperCase()}`;
 function shadeHex(hex, amount) {
@@ -500,13 +502,43 @@ function buildPanelHTML(key) {
               <span>${a.icon}</span>${a.name}
             </button>`).join('') + `</div>
           <p class="outfit-tip">✦ 自定义颜色和配饰都会保存在当前浏览器，下次登岛继续使用。</p>`;
+    case 'mailbox':
+      return head('PRIVATE MAILBOX', '给岛主留言', '写下想说的话，留言会私下寄到岛主邮箱，不会公开展示。') +
+        `<form class="mail-form" id="guestbookForm" action="${MAILBOX_SUBMIT_ENDPOINT}" method="post">
+          <label class="mail-field"><span>你的称呼</span><input id="mailGuestName" name="name" maxlength="24" autocomplete="name" placeholder="怎么称呼你？" required></label>
+          <label class="mail-field"><span>留言</span><textarea id="mailGuestMessage" name="message" maxlength="600" placeholder="写下想对岛主说的话…" required></textarea></label>
+          <input class="mail-honeypot" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="mail-submit" id="mailSubmit" type="submit">寄给岛主 📬</button>
+          <p class="mail-status" id="mailStatus" role="status" aria-live="polite"></p>
+          <p class="mail-privacy">🔒 收件地址不会显示在网页中；留言仅进入岛主邮箱，删除、隐藏和归档由岛主在邮箱中管理。首次启用时，岛主需在邮箱中完成一次服务激活。</p>
+        </form>`;
     default: return '';
   }
 }
 let panelOpen = false;
 function openPanel(key) {
-  if (!['about','skills','experience','projects','contact','outfits'].includes(key)) return;
+  if (!['about','skills','experience','projects','contact','outfits','mailbox'].includes(key)) return;
   if (rideState) endRide();
+  if (key === 'mailbox') {
+    panelOpen = true;
+    cameraMode = 'panel';
+    panelContent.innerHTML = buildPanelHTML(key);
+    panel.classList.add('open');
+    document.querySelectorAll('.dock-btn').forEach(x => x.classList.remove('active'));
+    areaName.textContent = '私密留言箱';
+    areaTitle.classList.remove('hidden');
+    setHover(hovered, false); hovered = null;
+    if (entered) {
+      say('把想说的话写下来吧，我会私下收到。');
+      const mailbox = props.mailbox;
+      flyTo(
+        [mailbox.position.x + 5.5, G + 4.2, mailbox.position.z + 6.5],
+        [mailbox.position.x, G + 1.2, mailbox.position.z],
+        800
+      );
+    }
+    return;
+  }
   if (key === 'outfits') {
     panelOpen = true;
     cameraMode = 'panel';
@@ -587,6 +619,47 @@ panelContent.addEventListener('input', e => {
   if (strip) {
     const values = [wardrobeState.sweater, wardrobeState.pants, wardrobeState.shoe, wardrobeState.accent];
     strip.querySelectorAll('i').forEach((node, index) => { node.style.background = values[index]; });
+  }
+});
+panelContent.addEventListener('submit', async e => {
+  if (e.target.id !== 'guestbookForm') return;
+  e.preventDefault();
+  const form = e.target;
+  const name = form.querySelector('#mailGuestName').value.trim();
+  const message = form.querySelector('#mailGuestMessage').value.trim();
+  const submit = form.querySelector('#mailSubmit');
+  const status = form.querySelector('#mailStatus');
+  if (!name || !message) {
+    status.textContent = '请填写称呼和留言。';
+    status.className = 'mail-status error';
+    return;
+  }
+  submit.disabled = true;
+  submit.textContent = '正在寄出…';
+  status.textContent = '';
+  status.className = 'mail-status';
+  try {
+    const response = await fetch(MAILBOX_SUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        name,
+        message,
+        _subject: '星海旅岛的访客留言',
+        _template: 'table',
+        _captcha: 'false'
+      })
+    });
+    if (!response.ok) throw new Error('mail delivery failed');
+    form.reset();
+    status.textContent = '留言已经寄出，谢谢你来到这座小岛。';
+    status.className = 'mail-status success';
+  } catch (_) {
+    status.textContent = '暂时没有寄出成功，请稍后再试。';
+    status.className = 'mail-status error';
+  } finally {
+    submit.disabled = false;
+    submit.textContent = '寄给岛主 📬';
   }
 });
 const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系'],['outfits','👗','换装']];
@@ -897,7 +970,17 @@ const SEATS = props.benches.map((bench, index) => {
     model: bench
   };
 });
-const INTERACTABLES = [...RIDES, ...SEATS];
+const MAILBOX = {
+  id: 'mailbox',
+  kind: 'mailbox',
+  name: '留言箱',
+  icon: '📬',
+  x: props.mailbox.position.x,
+  z: props.mailbox.position.z,
+  r: 2.2,
+  model: props.mailbox
+};
+const INTERACTABLES = [...RIDES, ...SEATS, MAILBOX];
 let rideState = null;
 const nbIcon = nearBtn.querySelector('.nb-icon');
 const nbHint = nearBtn.querySelector('.nb-text small');
@@ -908,13 +991,16 @@ function setNearButton(icon, name, hint) {
 for (const r of INTERACTABLES) {
   const div = document.createElement('div');
   div.className = 'scene-label';
-  div.innerHTML = `<span class="dot"></span>${r.icon} ${r.name} · E ${r.kind === 'seat' ? '坐下' : '游玩'}`;
+  const action = r.kind === 'seat' ? '坐下' : r.kind === 'mailbox' ? '留言' : '游玩';
+  div.innerHTML = `<span class="dot"></span>${r.icon} ${r.name} · E ${action}`;
   const lo = new CSS2DObject(div);
   r.labelNode = lo;
   if (r.id === 'bike' && props.bicycle) {
     lo.position.set(0, 2.35, 0); props.bicycle.add(lo);  // 车会移动，标签跟着车走
   } else if (r.kind === 'seat') {
     lo.position.set(0, 1.75, 0); r.model.add(lo);
+  } else if (r.kind === 'mailbox') {
+    lo.position.set(0, 2.05, 0); r.model.add(lo);
   } else {
     lo.position.set(r.x, G + 5.0, r.z); islandGroup.add(lo);
   }
@@ -925,12 +1011,16 @@ function updateInteractionLabels() {
     const x = r.id === 'bike' && props.bicycle ? props.bicycle.position.x : r.x;
     const z = r.id === 'bike' && props.bicycle ? props.bicycle.position.z : r.z;
     const distance = Math.hypot(player.position.x - x, player.position.z - z);
-    const labelRange = r.kind === 'seat' ? 2.8 : r.id === 'carousel' ? 5.2 : 3.0;
+    const labelRange = r.kind === 'seat' ? 2.8 : r.id === 'carousel' ? 5.2 : r.kind === 'mailbox' ? 3.1 : 3.0;
     r.labelNode.visible = entered && !panelOpen && !riding && distance <= labelRange;
   }
 }
 function startRide(r) {
   if (rideState || !r || !entered || panelOpen) return;
+  if (r.kind === 'mailbox') {
+    openPanel('mailbox');
+    return;
+  }
   rideState = { id: r.id, kind: r.kind || 'ride', name: r.name, icon: r.icon, t: 0 };
   vel.set(0, 0, 0); onGround = true;
   if (r.id === 'bike' && props.bicycle) {
@@ -1080,7 +1170,11 @@ function updateNearby() {
     setHover(nearB, false); nearB = near;
     if (near) setHover(near, true);
   }
-  if (nearRide) { setNearButton(nearRide.icon, nearRide.name, '点击 / E 坐上去玩'); nearBtn.classList.add('show'); }
+  if (nearRide) {
+    const hint = nearRide.kind === 'mailbox' ? '点击 / E 打开留言箱' : '点击 / E 坐上去玩';
+    setNearButton(nearRide.icon, nearRide.name, hint);
+    nearBtn.classList.add('show');
+  }
   else if (nearB) { setNearButton('👆', nearB.userData.labelName, '点击查看详情'); nearBtn.classList.add('show'); }
   else nearBtn.classList.remove('show');
 }
