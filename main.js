@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RESUME } from './resume.js';
-import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120h';
+import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120i';
 import { buildCottage, buildCrystalTower, buildBrickHall, buildGlassTower, buildPostTower } from './buildings.js';
 import { PALETTE } from './textures.js?v=20261120b';
 import { createPlayer } from './character.js?v=20261120c';
@@ -67,15 +67,8 @@ const QUEST_TARGETS = {
   carousel: { bookId: 'database', seconds: 10, place: '旋转木马' },
   'seat-0': { bookId: 'analytics', seconds: 5, place: '左侧长椅' }
 };
-const QUEST_STORAGE_KEY = 'xinghai-island-book-quest';
 let questState = { database: false, analytics: false, questStarted: false };
-try {
-  const savedQuest = JSON.parse(localStorage.getItem(QUEST_STORAGE_KEY) || 'null');
-  if (savedQuest && typeof savedQuest === 'object') questState = { ...questState, ...savedQuest };
-} catch (_) {}
-function saveQuestState() {
-  try { localStorage.setItem(QUEST_STORAGE_KEY, JSON.stringify(questState)); } catch (_) {}
-}
+try { localStorage.removeItem('xinghai-island-book-quest'); } catch (_) {}
 // 运行时组装收件地址，页面中不出现明文邮箱。
 const MAILBOX_RECIPIENT = String.fromCharCode(57,55,48,48,51,52,56,49,51,64,113,113,46,99,111,109);
 const hexToInt = value => parseInt(String(value).replace('#', ''), 16);
@@ -506,7 +499,6 @@ function showBookReward(bookId) {
   const book = QUEST_BOOKS[bookId];
   if (!book || questState[bookId]) return;
   questState[bookId] = true;
-  saveQuestState();
 
   bookImage.src = book.image;
   bookImage.alt = `${book.title}课本封面`;
@@ -516,9 +508,7 @@ function showBookReward(bookId) {
   bookFoundCount.textContent = `${foundBookCount()} / 2`;
   bookNext.textContent = foundBookCount() === 2
     ? '两本课本都找齐了。现在回到灰衣岛主身边，把这个好消息告诉他吧。'
-    : bookId === 'database'
-      ? '还差《数据分析》：去左侧长椅坐下，并保持 5 秒。'
-      : '还差《数据库》：去旋转木马坐下，并保持 10 秒。';
+    : '还有一本课本没有找到，去岛上继续探索看看吧。';
   bookModal.classList.remove('hidden');
   nearBtn.classList.remove('show');
   say('课本出现了！', 2200);
@@ -532,7 +522,6 @@ bookModal.addEventListener('click', e => {
 
 function talkToNpc() {
   questState.questStarted = true;
-  saveQuestState();
   if (questState.database && questState.analytics) {
     say('岛主：谢谢你，你是我的恩人。', 6500);
     return;
@@ -540,11 +529,10 @@ function talkToNpc() {
   if (questState.database || questState.analytics) {
     const missingId = questState.database ? 'analytics' : 'database';
     const missing = QUEST_BOOKS[missingId];
-    const target = missingId === 'database' ? '旋转木马，坐满 10 秒' : '左侧长椅，坐满 5 秒';
-    say(`岛主：已经找回一本了！还差《${missing.title}》——去${target}。`, 5500);
+    say(`岛主：已经找回一本了！还差《${missing.title}》，麻烦你继续帮我找找。`, 5500);
     return;
   }
-  say('岛主：能帮我找找我的两本课本吗？《数据库》藏在旋转木马里，坐满 10 秒；《数据分析》藏在左边长椅里，坐满 5 秒。', 7600);
+  say('岛主：能帮我找找我的两本课本吗？一本叫《数据库》，另一本叫《数据分析》。', 6200);
 }
 
 /* ==========================================================================
@@ -1326,6 +1314,8 @@ nearBtn.addEventListener('click', openNearby);
    ========================================================================== */
 const intro = $('intro');
 function startExplore() {
+  questState = { database: false, analytics: false, questStarted: false };
+  closeBookReward();
   entered = true;
   intro.classList.add('hidden');
   setTimeout(() => intro.style.display = 'none', 850);

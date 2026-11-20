@@ -60,8 +60,8 @@ function wavyRim(mesh, amount = 0.04, lobes = 12, yMin = 0) {
   mesh.geometry.computeVertexNormals();
 }
 
-// 岛的物理参数（版本 A 布局，禁止改动）
-export const ISLAND = { groundY: 1.6, radius: 19.5 };
+// 岛的物理参数：在保持现有建筑布局的前提下，适度扩大外围草地与海岸。
+export const ISLAND = { groundY: 1.6, radius: 21.5 };
 
 /* ==========================================================================
    海面（柔和浅青绿 + 低频涌动 + 宽软高光带，压掉密集白点）
@@ -73,7 +73,8 @@ export function createOcean(scene, uniformsOut) {
     uColorDeep: { value: new THREE.Color(0x2B9FC8) },
     uColorShallow: { value: new THREE.Color(0x8ADFE0) },
     uSun: { value: new THREE.Color(0xFFE9C8) },
-    uDay: { value: 1.0 }
+    uDay: { value: 1.0 },
+    uShoreRadius: { value: ISLAND.radius }
   };
   uniformsOut.ocean = uniforms;
   const material = new THREE.ShaderMaterial({
@@ -83,11 +84,11 @@ export function createOcean(scene, uniformsOut) {
       void main(){ vec4 wp = modelMatrix*vec4(position,1.0); vWorld=wp.xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }
     `,
     fragmentShader: `
-      uniform float uTime; uniform vec3 uColorDeep; uniform vec3 uColorShallow; uniform vec3 uSun; uniform float uDay;
+      uniform float uTime; uniform vec3 uColorDeep; uniform vec3 uColorShallow; uniform vec3 uSun; uniform float uDay; uniform float uShoreRadius;
       varying vec3 vWorld;
       void main(){
         float d = length(vWorld.xz);
-        float shallow = 1.0 - smoothstep(19.0, 48.0, d);
+        float shallow = 1.0 - smoothstep(uShoreRadius - 0.5, uShoreRadius + 28.0, d);
         vec3 col = mix(uColorDeep, uColorShallow, shallow);
         // 低频大涌动：只改变明度，不产生硬边
         float w1 = sin(vWorld.x*0.30 + uTime*0.55)*sin(vWorld.z*0.26 - uTime*0.45);
@@ -97,7 +98,8 @@ export function createOcean(scene, uniformsOut) {
         float band = smoothstep(0.35, 1.0, sin(vWorld.z*0.045 + uTime*0.18)*0.5 + 0.5);
         col += uSun * band * 0.05 * uDay;
         // 岸边柔白水线
-        float foam = smoothstep(19.2, 20.0, d) * (1.0 - smoothstep(20.6, 22.2, d));
+        float foam = smoothstep(uShoreRadius - 0.3, uShoreRadius + 0.5, d)
+          * (1.0 - smoothstep(uShoreRadius + 1.1, uShoreRadius + 2.7, d));
         foam *= 0.65 + 0.35*sin(uTime*0.8 + vWorld.x*0.45);
         col = mix(col, vec3(0.95,0.98,0.96), clamp(foam,0.0,1.0)*0.20);
         // 远处与天际柔和融合，去掉深蓝高对比边界
