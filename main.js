@@ -892,12 +892,23 @@ for (const r of INTERACTABLES) {
   div.className = 'scene-label';
   div.innerHTML = `<span class="dot"></span>${r.icon} ${r.name} · E ${r.kind === 'seat' ? '坐下' : '游玩'}`;
   const lo = new CSS2DObject(div);
+  r.labelNode = lo;
   if (r.id === 'bike' && props.bicycle) {
     lo.position.set(0, 2.35, 0); props.bicycle.add(lo);  // 车会移动，标签跟着车走
   } else if (r.kind === 'seat') {
     lo.position.set(0, 1.75, 0); r.model.add(lo);
   } else {
     lo.position.set(r.x, G + 5.0, r.z); islandGroup.add(lo);
+  }
+}
+function updateInteractionLabels() {
+  const riding = Boolean(rideState);
+  for (const r of INTERACTABLES) {
+    const x = r.id === 'bike' && props.bicycle ? props.bicycle.position.x : r.x;
+    const z = r.id === 'bike' && props.bicycle ? props.bicycle.position.z : r.z;
+    const distance = Math.hypot(player.position.x - x, player.position.z - z);
+    const labelRange = r.kind === 'seat' ? 3.7 : r.id === 'carousel' ? 6.6 : 4.4;
+    r.labelNode.visible = entered && !panelOpen && !riding && distance <= labelRange;
   }
 }
 function startRide(r) {
@@ -1174,6 +1185,7 @@ function animate() {
   if (musicPlaying) { progress = (progress + dt*2) % 100; $('musicProgress').style.width = progress + '%'; }
 
   drawMinimap();
+  updateInteractionLabels();
   updateNearby();
   controls.update();
   renderer.render(scene, camera);
@@ -1181,7 +1193,12 @@ function animate() {
 }
 animate();
 
-requestAnimationFrame(() => { const l = $('loading'); l.style.opacity = '0'; setTimeout(() => l.remove(), 700); });
+requestAnimationFrame(() => {
+  document.getElementById('app').classList.add('app-ready');
+  const l = $('loading');
+  l.style.opacity = '0';
+  setTimeout(() => l.remove(), 320);
+});
 // 调试/自动化钩子（只读查询 + 定位，供测试与分享链接使用，不影响正常玩法）
 window.__islandDebug = {
   getPlayer: () => ({ x: player.position.x, z: player.position.z }),
