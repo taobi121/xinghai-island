@@ -555,6 +555,24 @@ function closePanel() {
   if (entered) cameraMode = 'follow';
 }
 $('panelClose').addEventListener('click', closePanel);
+function closeCenterOverlays() {
+  let closed = false;
+  if (panelOpen) { closePanel(); closed = true; }
+  const timeWidget = $('timeWidget');
+  if (timeWidget && !timeWidget.classList.contains('hidden')) {
+    timeWidget.classList.add('hidden');
+    closed = true;
+  }
+  const helpModal = $('helpModal');
+  if (helpModal && !helpModal.classList.contains('hidden')) {
+    helpModal.classList.add('hidden');
+    closed = true;
+  }
+  return closed;
+}
+$('helpModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
 panelContent.addEventListener('click', e => {
   const outfitButton = e.target.closest('[data-outfit]');
   if (outfitButton) { applyOutfit(outfitButton.dataset.outfit, true); return; }
@@ -708,7 +726,7 @@ function twoFingerDist() {
   return p.length >= 2 ? Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) : 0;
 }
 renderer.domElement.addEventListener('pointerdown', e => {
-  if (panelOpen) return;
+  if (closeCenterOverlays()) return;
   activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { renderer.domElement.setPointerCapture(e.pointerId); } catch (_) {}
   if (activePointers.size === 1) {
