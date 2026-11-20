@@ -508,7 +508,7 @@ function buildPanelHTML(key) {
           <label class="mail-field"><span>你的称呼</span><input id="mailGuestName" name="name" maxlength="24" autocomplete="name" placeholder="怎么称呼你？" required></label>
           <label class="mail-field"><span>留言</span><textarea id="mailGuestMessage" name="message" maxlength="600" placeholder="写下想对岛主说的话…" required></textarea></label>
           <input class="mail-honeypot" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button class="mail-submit" id="mailSubmit" type="submit">打开邮件应用寄出 📬</button>
+          <button class="mail-submit" id="mailSubmit" type="submit">打开邮件并寄出 📬</button>
           <p class="mail-status" id="mailStatus" role="status" aria-live="polite"></p>
           <p class="mail-privacy">🔒 收件地址不会显示在网页中。点击后会在你的邮件应用中打开一封已填好的邮件，请确认收件人并点击发送；岛主可直接在邮箱里删除、隐藏或归档留言。</p>
         </form>`;
@@ -642,14 +642,14 @@ panelContent.addEventListener('submit', async e => {
     const subject = encodeURIComponent(`星海旅岛的访客留言 · ${name}`);
     const body = encodeURIComponent(`称呼：${name}\n\n留言：\n${message}\n\n—— 来自星海旅岛`);
     window.location.href = `mailto:${MAILBOX_RECIPIENT}?subject=${subject}&body=${body}`;
-    status.textContent = '邮件应用已打开，请确认内容后点击发送。';
+    status.textContent = '已尝试打开邮件应用。若已弹出，请确认内容后点击发送；若没有弹出，请先为浏览器配置默认邮件应用。';
     status.className = 'mail-status success';
   } catch (_) {
     status.textContent = '邮件应用没有打开，请检查系统是否已配置邮箱客户端。';
     status.className = 'mail-status error';
   } finally {
     submit.disabled = false;
-    submit.textContent = '打开邮件应用寄出 📬';
+    submit.textContent = '打开邮件并寄出 📬';
   }
 });
 const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系'],['outfits','👗','换装']];
