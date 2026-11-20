@@ -81,7 +81,7 @@ canvas{display:block}
 .time-presets button:hover{background:var(--gold-light)}
 
 /* ---------- 小地图 ---------- */
-#minimap{position:absolute;bottom:22px;left:22px;z-index:21;width:150px;height:150px;background:var(--paper);border:3px solid #fff;border-radius:18px;box-shadow:var(--shadow),0 0 0 3px rgba(212,169,74,.3);overflow:hidden}
+#minimap{position:absolute;top:84px;left:22px;z-index:21;width:150px;height:150px;background:var(--paper);border:3px solid #fff;border-radius:18px;box-shadow:var(--shadow),0 0 0 3px rgba(212,169,74,.3);overflow:hidden}
 #minimapCanvas{width:150px;height:150px;display:block}
 .minimap-label{position:absolute;top:5px;left:8px;font-size:10px;font-weight:700;color:#6a5a42;background:rgba(255,255,255,.7);padding:2px 7px;border-radius:8px}
 
@@ -249,17 +249,18 @@ canvas{display:block}
   #areaTitle{top:58px;padding:6px 14px}
   #areaName{font-size:13px}
   #timeWidget{top:56px;right:12px;width:210px}
-  #minimap{width:96px;height:96px;bottom:76px;left:12px}
+  #minimap{top:62px;bottom:auto;left:12px;width:96px;height:96px}
   #minimapCanvas{width:96px;height:96px}
   .minimap-label{font-size:8px}
-  #speech{bottom:238px;max-width:calc(100vw - 30px);font-size:12px;padding:10px 15px}
+  #speech{bottom:270px;max-width:calc(100vw - 30px);font-size:12px;padding:10px 15px}
   /* 底部导航：单独一行居中，缩小到 5 个按钮可完整放下 */
   #dock{bottom:12px;left:50%;max-width:calc(100vw - 24px);width:max-content;gap:2px;padding:5px 6px;justify-content:center}
   .dock-btn{flex-direction:column;gap:2px;padding:5px 8px;font-size:10px;min-width:0}
   .dock-btn .ico{font-size:16px}
-  /* 摇杆移到导航栏上方，避免与 dock 重叠；按视口宽度判断移动端，兼容性更好 */
-  #joystick{display:block;bottom:96px;right:16px;width:112px;height:112px}
-  #jumpBtn{display:block;bottom:214px;right:44px;width:52px;height:52px;font-size:22px}
+  /* 移动端：左手移动、右手跳跃，两者都位于底部导航上方。 */
+  #joystick{display:block;bottom:82px;right:auto;left:14px;width:112px;height:112px}
+  #jumpBtn{display:block;bottom:110px;right:20px;left:auto;width:56px;height:56px;font-size:23px}
+  #nearBtn{bottom:214px}
   #musicPlayer{display:none !important}
   #panel{padding:42px 20px 30px}
   .panel-title{font-size:22px}
