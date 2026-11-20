@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mat, texMat, PALETTE, brickTexture, stoneTexture, woodTexture, glassTexture, plasterTexture, roofTexture } from './textures.js';
+import { mat, texMat, PALETTE, brickTexture, stoneTexture, woodTexture, glassTexture, plasterTexture, roofTexture } from './textures.js?v=20261120b';
 import {
   M, mesh, roundedBox, organicCyl, lathe, dome, archedWall, archFrame, column,
   eaves, hipRoof, fanWindow, windowUnit, steps, beltMolding, flag, flowerBox, signboard, vine, chimney

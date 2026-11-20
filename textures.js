@@ -7,10 +7,10 @@ import * as THREE from 'three';
 
 /** 供后端单向 import 的统一色板（字符串色值，可直接赋给 THREE.Color） */
 export const PALETTE = {
-  grass: { main: '#BFD08A', dark: '#A9C476', light: '#D6E0A4' },
-  sky: { top: '#6FB8E8', horizon: '#D8F0F7' },
-  sea: { shallow: '#7FD4DA', deep: '#3FA6C4' },
-  sand: '#F2E3BC',
+  grass: { main: '#BEDB83', dark: '#9FC56D', light: '#DDF0A5' },
+  sky: { top: '#78D1F5', horizon: '#FFF3D7' },
+  sea: { shallow: '#8ADFE0', deep: '#2B9FC8' },
+  sand: '#F6E7C4',
   plaster: '#F6EAD0',
   cream: '#FBEFD8',
   brick: { face: '#C97B62', mortar: 'rgba(150,95,75,.28)' },
@@ -62,7 +62,7 @@ function handRect(ctx, x, y, w, h, fill, stroke, lw = 1.6, wob = 2) {
 }
 
 /* ---------- 草地：4-stop 低频渐变 + 大块水彩色斑 + 细草簇 + 散点小花 ---------- */
-export const grassTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const grassTexture = canvasTex(384, 384, (ctx, w, h) => {
   // 低频水彩渐变：暖黄绿→柔绿→亮绿→暖绿，降饱和、去冷脏
   const grad = ctx.createLinearGradient(0, 0, w, h);
   grad.addColorStop(0, '#B3C77F');
@@ -103,7 +103,7 @@ export const grassTexture = canvasTex(512, 512, (ctx, w, h) => {
 }, 6, 6);
 
 /* ---------- 沙滩：暖奶油细沙 ---------- */
-export const sandTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const sandTexture = canvasTex(384, 384, (ctx, w, h) => {
   ctx.fillStyle = PALETTE.sand; ctx.fillRect(0, 0, w, h);
   for (let i = 0; i < 66; i++) {
     ctx.fillStyle = `rgba(255,250,235,${0.12 + Math.random() * 0.16})`;
@@ -118,7 +118,7 @@ export const sandTexture = canvasTex(512, 512, (ctx, w, h) => {
 }, 6, 6);
 
 /* ---------- 红砖：随机范围收窄、淡缝、轻脏斑、保留顶部高光 ---------- */
-export const brickTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const brickTexture = canvasTex(384, 384, (ctx, w, h) => {
   ctx.fillStyle = '#EBD9BE'; ctx.fillRect(0, 0, w, h);
   const bw = 116, bh = 50;
   for (let row = 0; row < h / bh + 1; row++) {
@@ -138,7 +138,7 @@ export const brickTexture = canvasTex(512, 512, (ctx, w, h) => {
 }, 2, 2);
 
 /* ---------- 米白灰泥 ---------- */
-export const plasterTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const plasterTexture = canvasTex(384, 384, (ctx, w, h) => {
   ctx.fillStyle = PALETTE.plaster; ctx.fillRect(0, 0, w, h);
   for (let i = 0; i < 80; i++) {
     ctx.fillStyle = `rgba(255,250,235,${0.16 + Math.random() * 0.16})`;
@@ -151,7 +151,7 @@ export const plasterTexture = canvasTex(512, 512, (ctx, w, h) => {
 }, 2, 2);
 
 /* ---------- 石材：底色提亮、描边与噪点减半 ---------- */
-export const stoneTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const stoneTexture = canvasTex(384, 384, (ctx, w, h) => {
   ctx.fillStyle = '#E8DFC9'; ctx.fillRect(0, 0, w, h);
   const s = 104;
   for (let row = 0; row < 5; row++) for (let col = 0; col < 5; col++) {
@@ -186,7 +186,7 @@ export const woodTexture = canvasTex(256, 512, (ctx, w, h) => {
 }, 1, 1);
 
 /* ---------- 屋顶瓦：底色 #C6654F，淡描边 ---------- */
-export const roofTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const roofTexture = canvasTex(384, 384, (ctx, w, h) => {
   ctx.fillStyle = PALETTE.roofRed; ctx.fillRect(0, 0, w, h);
   const cw = 36, ch = 27;   // 鳞片瓦加密（绘本小屋的密集叠瓦）
   for (let row = 0; row < h / ch + 1; row++) {
@@ -210,7 +210,7 @@ export const roofTexture = canvasTex(512, 512, (ctx, w, h) => {
 }, 4, 4);
 
 /* ---------- 玻璃幕墙：明亮通透、柔化格框 ---------- */
-export const glassTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const glassTexture = canvasTex(320, 320, (ctx, w, h) => {
   ctx.fillStyle = '#A9D2DC'; ctx.fillRect(0, 0, w, h);
   const cols = 5, rows = 7, cw = w / cols, ch = h / rows;
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
@@ -224,7 +224,7 @@ export const glassTexture = canvasTex(512, 512, (ctx, w, h) => {
 }, 2, 2);
 
 /* ---------- 奶油石板路：单块细腻石板，供后端替换 pathTextureFlat 使用 ---------- */
-export const pathTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const pathTexture = canvasTex(384, 384, (ctx, w, h) => {
   ctx.fillStyle = PALETTE.cream; ctx.fillRect(0, 0, w, h);
   for (let i = 0; i < 54; i++) {
     ctx.fillStyle = `rgba(255,250,236,${0.12 + Math.random() * 0.18})`;
@@ -247,7 +247,7 @@ export const mat = (color, opts = {}) => new THREE.MeshStandardMaterial({ color,
 /* ---------- 鹅卵石板路：扰动网格 Voronoi 风不规则多边形，暖灰蓝磨边细缝（M3） ----------
    512×512，RepeatWrapping；后端主路可切换：texMat(cobbleTexture)
    角点环绕共享，corner(i+cols,j)=corner(i,j)+w，因此跨边界无缝平铺。 */
-export const cobbleTexture = canvasTex(512, 512, (ctx, w, h) => {
+export const cobbleTexture = canvasTex(384, 384, (ctx, w, h) => {
   // 细缝 cavity 底色：比石板略暗的暖灰
   ctx.fillStyle = '#7D8B87';
   ctx.fillRect(0, 0, w, h);

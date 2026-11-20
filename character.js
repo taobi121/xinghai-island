@@ -153,6 +153,57 @@ export function createPlayer(emissiveMats) {
   const strap = add(group, new THREE.CapsuleGeometry(0.028, 0.88, 6, 10), mk(C.bagDark), 0.02, 1.12, 0.28, false);
   strap.rotation.z = 0.98;
 
+  /* ---------- 可切换配饰：贝雷帽 / 圆框眼镜 / 围巾 / 花朵发夹 ---------- */
+  const accessoryMat = mk(0xE67C67, { roughness: 0.72 });
+  const accessoryTrimMat = mk(C.cream, { roughness: 0.8 });
+  const accessories = {};
+
+  const beret = new THREE.Group();
+  beret.position.set(0.04, 2.15, -0.03);
+  beret.rotation.z = -0.12;
+  add(beret, new THREE.CylinderGeometry(0.34, 0.35, 0.065, 28), accessoryMat, 0, 0, 0);
+  const beretTop = add(beret, new THREE.SphereGeometry(0.33, 24, 16), accessoryMat, 0, 0.07, 0);
+  beretTop.scale.set(1, 0.6, 1);
+  add(beret, new THREE.SphereGeometry(0.045, 12, 8), accessoryTrimMat, 0, 0.22, 0);
+  beret.visible = false;
+  group.add(beret);
+  accessories.beret = beret;
+
+  const glasses = new THREE.Group();
+  for (const sx of [-1, 1]) {
+    add(glasses, new THREE.TorusGeometry(0.11, 0.014, 8, 24), accessoryMat, sx * 0.18, 0, 0, false);
+  }
+  const bridge = add(glasses, new THREE.CylinderGeometry(0.012, 0.012, 0.12, 8), accessoryMat, 0, 0, 0, false);
+  bridge.rotation.z = Math.PI / 2;
+  glasses.position.set(0, 1.75, 0.47);
+  glasses.visible = false;
+  group.add(glasses);
+  accessories.glasses = glasses;
+
+  const scarf = new THREE.Group();
+  const scarfRing = add(scarf, new THREE.TorusGeometry(0.24, 0.055, 8, 28), accessoryMat, 0, 0, 0);
+  scarfRing.rotation.x = Math.PI / 2;
+  scarfRing.scale.set(1, 0.88, 1);
+  const scarfTail = add(scarf, new THREE.CapsuleGeometry(0.075, 0.28, 5, 10), accessoryMat, 0.16, -0.23, 0.22);
+  scarfTail.rotation.z = -0.24;
+  scarf.position.set(0, 1.39, 0.01);
+  scarf.visible = false;
+  group.add(scarf);
+  accessories.scarf = scarf;
+
+  const flower = new THREE.Group();
+  for (let i = 0; i < 5; i++) {
+    const a = i / 5 * Math.PI * 2;
+    const petal = add(flower, new THREE.SphereGeometry(0.075, 12, 8), accessoryMat, Math.cos(a) * 0.075, Math.sin(a) * 0.075, 0, false);
+    petal.scale.set(1, 0.72, 0.42);
+  }
+  add(flower, new THREE.SphereGeometry(0.055, 12, 8), accessoryTrimMat, 0, 0, 0.035, false);
+  flower.position.set(0.34, 2.02, 0.22);
+  flower.rotation.z = 0.2;
+  flower.visible = false;
+  group.add(flower);
+  accessories.flower = flower;
+
   /* ---------- 手臂（枢轴在肩 y=1.25, x=±0.4，保持不变） ---------- */
   function makeArm(sx) {
     const p = new THREE.Group();
@@ -193,5 +244,13 @@ export function createPlayer(emissiveMats) {
     if (Number.isFinite(outfit.sole)) soleMat.color.setHex(outfit.sole);
   }
 
-  return { group, armL, armR, legL, legR, setOutfit };
+  function setAccessory(id = 'none') {
+    Object.entries(accessories).forEach(([key, node]) => { node.visible = key === id; });
+  }
+
+  function setAccessoryColor(color) {
+    if (Number.isFinite(color)) accessoryMat.color.setHex(color);
+  }
+
+  return { group, armL, armR, legL, legR, setOutfit, setAccessory, setAccessoryColor };
 }

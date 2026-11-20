@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RESUME } from './resume.js';
-import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120a';
+import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120b';
 import { buildCottage, buildCrystalTower, buildBrickHall, buildGlassTower, buildPostTower } from './buildings.js';
-import { PALETTE } from './textures.js';
-import { createPlayer } from './character.js?v=20261120a';
+import { PALETTE } from './textures.js?v=20261120b';
+import { createPlayer } from './character.js?v=20261120b';
 
 const G = ISLAND.groundY, R = ISLAND.radius;
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
@@ -42,31 +42,63 @@ const OUTFITS = [
     swatches: ['#E0B65B', '#5B4A39', '#FFF8E8']
   }
 ];
+const ACCESSORIES = [
+  { id: 'none', name: '不戴配饰', icon: '○' },
+  { id: 'beret', name: '贝雷帽', icon: '🎩' },
+  { id: 'glasses', name: '圆框眼镜', icon: '👓' },
+  { id: 'scarf', name: '小围巾', icon: '🧣' },
+  { id: 'flower', name: '花朵发夹', icon: '🌸' }
+];
+const hexToInt = value => parseInt(String(value).replace('#', ''), 16);
+const intToHex = value => `#${Number(value).toString(16).padStart(6, '0').toUpperCase()}`;
+function shadeHex(hex, amount) {
+  const n = hexToInt(hex);
+  const r = Math.max(0, Math.min(255, ((n >> 16) & 255) + amount));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amount));
+  const b = Math.max(0, Math.min(255, (n & 255) + amount));
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
 let currentOutfit = 'mist';
+let wardrobeState = {
+  preset: 'mist',
+  sweater: '#5A7A9A',
+  sweaterDark: '#4C6A88',
+  pants: '#3E4A5A',
+  shoe: '#F5F2EA',
+  sole: '#3E4A5A',
+  accent: '#E67C67',
+  accessory: 'none'
+};
 try {
   const savedOutfit = localStorage.getItem('xinghai-outfit');
   if (OUTFITS.some(o => o.id === savedOutfit)) currentOutfit = savedOutfit;
+  const savedWardrobe = JSON.parse(localStorage.getItem('xinghai-wardrobe') || 'null');
+  if (savedWardrobe && typeof savedWardrobe === 'object') {
+    wardrobeState = { ...wardrobeState, ...savedWardrobe };
+    currentOutfit = wardrobeState.preset || currentOutfit;
+  }
 } catch (_) {}
 const container = document.getElementById('scene-container');
+const isCompactScreen = matchMedia('(max-width: 700px)').matches;
 
 /* ==========================================================================
    渲染器 / 场景 / 相机
    ========================================================================== */
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xE6F4F5, 90, 260);
+scene.fog = new THREE.Fog(0xEAF8F4, 112, 275);
 
 const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 1000);
 camera.position.set(0, 22, 40);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isCompactScreen ? 1.25 : 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 // 绘本低对比：本版本 three 无 NeutralToneMapping，沿用 ACES 但以更柔的光比压对比
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.28;
+renderer.toneMappingExposure = 1.18;
 container.appendChild(renderer.domElement);
 
 const labelRenderer = new CSS2DRenderer();
@@ -88,8 +120,8 @@ controls.enablePan = false;
    天空穹顶
    ========================================================================== */
 const skyUniforms = {
-  topColor: { value: new THREE.Color(0x8FC8E8) },
-  bottomColor: { value: new THREE.Color(0xE6F4F5) },
+  topColor: { value: new THREE.Color(0x78D1F5) },
+  bottomColor: { value: new THREE.Color(0xFFF3D7) },
   offset: { value: 20 },
   exponent: { value: 0.75 }
 };
@@ -104,20 +136,20 @@ scene.add(sky);
 /* ==========================================================================
    灯光
    ========================================================================== */
-const hemiLight = new THREE.HemisphereLight(0xFFF3DE, 0xE8D6B0, 1.35); scene.add(hemiLight);
+const hemiLight = new THREE.HemisphereLight(0xFFF8E2, 0xE5D4B6, 1.55); scene.add(hemiLight);
 // 暖阳主光：色温偏暖、强度略降，配柔和接触阴影
-const sunLight = new THREE.DirectionalLight(0xFFEBCC, 1.45);
+const sunLight = new THREE.DirectionalLight(0xFFEACB, 1.2);
 sunLight.position.set(18, 30, 16);
 sunLight.castShadow = true;
-sunLight.shadow.mapSize.set(2048, 2048);
+sunLight.shadow.mapSize.set(isCompactScreen ? 768 : 1024, isCompactScreen ? 768 : 1024);
 Object.assign(sunLight.shadow.camera, { left: -44, right: 44, top: 44, bottom: -44, near: 1, far: 140 });
 sunLight.shadow.camera.updateProjectionMatrix();
 sunLight.shadow.bias = -0.0004; sunLight.shadow.normalBias = 0.03;
-sunLight.shadow.radius = 5; // 配合 PCFSoftShadowMap 得到柔和接触阴影
+sunLight.shadow.radius = 6; // 配合 PCFSoftShadowMap 得到柔和接触阴影
 scene.add(sunLight); scene.add(sunLight.target);
 // 暖调补光 + 低强度暖色轮廓光（背向相机的一侧）
-const fillLight = new THREE.DirectionalLight(0xFFE5C8, 0.34); fillLight.position.set(-16, 10, -12); scene.add(fillLight);
-const rimLight = new THREE.DirectionalLight(0xFFD3A0, 0.32); rimLight.position.set(-10, 8, -20); scene.add(rimLight);
+const fillLight = new THREE.DirectionalLight(0xFFE9D2, 0.42); fillLight.position.set(-16, 10, -12); scene.add(fillLight);
+const rimLight = new THREE.DirectionalLight(0xFFD9AD, 0.38); rimLight.position.set(-10, 8, -20); scene.add(rimLight);
 
 // 太阳/月亮圆盘
 const sunDisc = new THREE.Mesh(new THREE.SphereGeometry(3.5, 20, 16), new THREE.MeshBasicMaterial({ color: 0xfff3c0, fog: false }));
@@ -126,7 +158,7 @@ scene.add(sunDisc, moonDisc);
 
 // 星空
 const starGeo = new THREE.BufferGeometry();
-const starN = 700, starPos = new Float32Array(starN * 3);
+const starN = 480, starPos = new Float32Array(starN * 3);
 for (let i = 0; i < starN; i++) {
   const v = new THREE.Vector3().setFromSphericalCoords(350, Math.acos(Math.random() * 0.9 + 0.05), Math.random() * Math.PI * 2);
   starPos[i * 3] = v.x; starPos[i * 3 + 1] = Math.abs(v.y); starPos[i * 3 + 2] = v.z;
@@ -180,17 +212,71 @@ COLLIDERS.push({ x: 0, z: 0, r: 3.6 });
 /* ==========================================================================
    玩家角色：由 character.js 工厂创建（正面 +Z，原点在脚底）
    ========================================================================== */
-const { group: player, armL, armR, legL, legR, setOutfit } = createPlayer(emissiveMats);
+const { group: player, armL, armR, legL, legR, setOutfit, setAccessory, setAccessoryColor } = createPlayer(emissiveMats);
+function syncWardrobeUI() {
+  document.querySelectorAll('[data-outfit]').forEach(btn => btn.classList.toggle('active', btn.dataset.outfit === currentOutfit));
+  document.querySelectorAll('[data-accessory]').forEach(btn => btn.classList.toggle('active', btn.dataset.accessory === wardrobeState.accessory));
+  document.querySelectorAll('[data-color-key]').forEach(input => {
+    const key = input.dataset.colorKey;
+    if (wardrobeState[key]) input.value = wardrobeState[key];
+  });
+}
+function applyWardrobe(announceText = '') {
+  setOutfit({
+    sweater: hexToInt(wardrobeState.sweater),
+    sweaterDark: hexToInt(wardrobeState.sweaterDark),
+    pants: hexToInt(wardrobeState.pants),
+    shoe: hexToInt(wardrobeState.shoe),
+    sole: hexToInt(wardrobeState.sole)
+  });
+  setAccessory(wardrobeState.accessory);
+  setAccessoryColor(hexToInt(wardrobeState.accent));
+  try {
+    localStorage.setItem('xinghai-wardrobe', JSON.stringify(wardrobeState));
+    localStorage.setItem('xinghai-outfit', currentOutfit);
+  } catch (_) {}
+  syncWardrobeUI();
+  if (announceText) say(announceText, 2200);
+}
 function applyOutfit(id, announce = false) {
   const outfit = OUTFITS.find(o => o.id === id);
   if (!outfit) return;
   currentOutfit = outfit.id;
-  setOutfit(outfit);
-  try { localStorage.setItem('xinghai-outfit', outfit.id); } catch (_) {}
-  document.querySelectorAll('[data-outfit]').forEach(btn => btn.classList.toggle('active', btn.dataset.outfit === outfit.id));
-  if (announce) say(`换好啦：${outfit.name}`, 2200);
+  wardrobeState = {
+    ...wardrobeState,
+    preset: outfit.id,
+    sweater: intToHex(outfit.sweater),
+    sweaterDark: intToHex(outfit.sweaterDark),
+    pants: intToHex(outfit.pants),
+    shoe: intToHex(outfit.shoe),
+    sole: intToHex(outfit.sole)
+  };
+  applyWardrobe(announce ? `换好啦：${outfit.name}` : '');
 }
-applyOutfit(currentOutfit);
+function setCustomColor(key, value) {
+  if (!['sweater', 'pants', 'shoe', 'accent'].includes(key)) return;
+  wardrobeState[key] = value.toUpperCase();
+  if (key === 'sweater') wardrobeState.sweaterDark = shadeHex(value, -22);
+  if (key === 'pants') wardrobeState.sole = shadeHex(value, -20);
+  if (key === 'shoe') wardrobeState.sole = shadeHex(value, -62);
+  wardrobeState.preset = 'custom';
+  currentOutfit = 'custom';
+  applyWardrobe();
+}
+function chooseAccessory(id, announce = false) {
+  if (!ACCESSORIES.some(a => a.id === id)) return;
+  wardrobeState.accessory = id;
+  applyWardrobe(announce ? `配饰已切换：${ACCESSORIES.find(a => a.id === id).name}` : '');
+}
+if (currentOutfit !== 'custom' && OUTFITS.some(o => o.id === currentOutfit)) {
+  const preset = OUTFITS.find(o => o.id === currentOutfit);
+  wardrobeState.sweater = intToHex(preset.sweater);
+  wardrobeState.sweaterDark = intToHex(preset.sweaterDark);
+  wardrobeState.pants = intToHex(preset.pants);
+  wardrobeState.shoe = intToHex(preset.shoe);
+  wardrobeState.sole = intToHex(preset.sole);
+}
+applyWardrobe();
 // 脚下阴影
 const pShadow = new THREE.Mesh(new THREE.CircleGeometry(0.5, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false }));
 pShadow.rotation.x = -Math.PI / 2; islandGroup.add(pShadow);
@@ -233,7 +319,7 @@ function makePetalTexture() {
 }
 // 花瓣围绕 6 棵樱花树分布，形成"树下飘落"感（数量维持 260，移动端友好）
 const SAKURA_SPOTS = [[-15.5,-2],[-15,3],[-8,-13.5],[15.5,-2],[15,3],[8,-13.5]];
-const PETAL_N = 260, petalArr = new Float32Array(PETAL_N * 3), petalSeeds = [];
+const PETAL_N = isCompactScreen ? 110 : 170, petalArr = new Float32Array(PETAL_N * 3), petalSeeds = [];
 for (let i = 0; i < PETAL_N; i++) {
   const spot = SAKURA_SPOTS[i % SAKURA_SPOTS.length];
   const a = Math.random() * Math.PI * 2, r = Math.random() * 3.6;
@@ -247,7 +333,7 @@ petalGeo.setAttribute('position', new THREE.BufferAttribute(petalArr, 3));
 const petalMat = new THREE.PointsMaterial({ map: makePetalTexture(), color: 0xffffff, size: 0.32, transparent: true, opacity: 0.92, alphaTest: 0.05, depthWrite: false });
 scene.add(new THREE.Points(petalGeo, petalMat));
 
-const FIRE_N = 110, fireArr = new Float32Array(FIRE_N * 3), fireBase = [];
+const FIRE_N = isCompactScreen ? 46 : 66, fireArr = new Float32Array(FIRE_N * 3), fireBase = [];
 for (let i = 0; i < FIRE_N; i++) {
   const a = Math.random()*Math.PI*2, r = Math.random()*16;
   fireArr[i*3] = Math.cos(a)*r; fireArr[i*3+1] = G + 0.5 + Math.random()*3; fireArr[i*3+2] = Math.sin(a)*r;
@@ -261,18 +347,18 @@ const fireflies = new THREE.Points(fireGeo, fireMat); islandGroup.add(fireflies)
 /* ==========================================================================
    昼夜系统
    ========================================================================== */
-const timeState = { hour: 12, auto: true, speed: 0.3 };
+const timeState = { hour: 12, auto: false, speed: 0.003 };
 const skyStops = [
-  { h: 0,  top: 0x0a1838, bot: 0x1a2b50, deep: 0x0d3a52, shallow: 0x1a5a6a },
-  { h: 5,  top: 0x2a3a6a, bot: 0x8a6a8a, deep: 0x1a5a7a, shallow: 0x4a8a98 },
-  { h: 6.5,top: 0x9FBCD4, bot: 0xFFC9AC, deep: 0x4AA9C0, shallow: 0x8ACBCC },
-  { h: 9,  top: 0x8FC6E6, bot: 0xDFF0F4, deep: 0x3FA6C4, shallow: 0x7FC4C8 },
-  { h: 12, top: 0x8FC8E8, bot: 0xE6F4F5, deep: 0x3FA6C4, shallow: 0x7FC4C8 },
-  { h: 16, top: 0x8BC3E4, bot: 0xE4F1F2, deep: 0x3FA6C4, shallow: 0x7FC4C8 },
-  { h: 18, top: 0xA38CB4, bot: 0xFFB083, deep: 0x3B8FA8, shallow: 0x78B9BE },
-  { h: 19.5,top: 0x3a3a70, bot: 0x9a4a6a, deep: 0x183a58, shallow: 0x3a6a7a },
-  { h: 21, top: 0x14244a, bot: 0x2a3a60, deep: 0x0d3048, shallow: 0x1a4a5a },
-  { h: 24, top: 0x0a1838, bot: 0x1a2b50, deep: 0x0d3a52, shallow: 0x1a5a6a }
+  { h: 0,  top: 0x101F4A, bot: 0x263E6B, deep: 0x123D6A, shallow: 0x256D88 },
+  { h: 5,  top: 0x3A4D82, bot: 0xB77691, deep: 0x225D88, shallow: 0x5B9FAE },
+  { h: 6.5,top: 0xA7D9EC, bot: 0xFFD3AF, deep: 0x4CB3CC, shallow: 0x91D7D7 },
+  { h: 9,  top: 0x73D0F6, bot: 0xFFF0CF, deep: 0x2FA6CB, shallow: 0x87DADB },
+  { h: 12, top: 0x78D5FA, bot: 0xFFF4D9, deep: 0x2B9FC8, shallow: 0x8ADFE0 },
+  { h: 16, top: 0x76C9EE, bot: 0xFFF0D4, deep: 0x329CC1, shallow: 0x84D3D7 },
+  { h: 18, top: 0xBAA0C8, bot: 0xFFBE91, deep: 0x438FAB, shallow: 0x7ABCBF },
+  { h: 19.5,top: 0x504776, bot: 0xB76077, deep: 0x245272, shallow: 0x487887 },
+  { h: 21, top: 0x1A2F58, bot: 0x394B73, deep: 0x193F61, shallow: 0x295B71 },
+  { h: 24, top: 0x101F4A, bot: 0x263E6B, deep: 0x123D6A, shallow: 0x256D88 }
 ];
 const cA = new THREE.Color(), cB = new THREE.Color();
 function stopColor(hour, key) {
@@ -296,11 +382,11 @@ function applyTime(hour) {
     oceanUniforms.ocean.uSun.value.copy(sunLight.color);
     oceanUniforms.ocean.uDay.value = day;
   }
-  hemiLight.intensity = lerp(0.45, 1.35, day);
-  sunLight.intensity = lerp(0.08, 1.45, day);
-  fillLight.intensity = lerp(0.22, 0.34, day);
+  hemiLight.intensity = lerp(0.52, 1.55, day);
+  sunLight.intensity = lerp(0.08, 1.2, day);
+  fillLight.intensity = lerp(0.26, 0.42, day);
   const warm = (hour > 16 && hour < 20) ? (hour-16)/4 : (hour > 5 && hour < 8 ? (8-hour)/3 : 0);
-  rimLight.intensity = lerp(0.08, 0.32, day) + warm * 0.16;
+  rimLight.intensity = lerp(0.1, 0.38, day) + warm * 0.16;
   sunLight.color.set(0xFFEBCC).lerp(new THREE.Color(0xFFA868), warm*0.7);
   const sa = (hour - 6)/24 * Math.PI * 2;
   sunDisc.position.set(Math.cos(sa)*200, Math.sin(sa)*150, -120);
@@ -337,6 +423,7 @@ function updateTimeUI(hour, day) {
 }
 timeSlider.addEventListener('input', e => { timeState.hour = parseFloat(e.target.value); applyTime(timeState.hour); });
 timeToggle.addEventListener('click', () => { timeState.auto = !timeState.auto; timeToggle.textContent = timeState.auto ? '⏸' : '▶'; });
+timeToggle.textContent = timeState.auto ? '⏸' : '▶';
 document.querySelectorAll('.time-presets button').forEach(b => b.addEventListener('click', () => { timeState.hour = parseFloat(b.dataset.hour); applyTime(timeState.hour); }));
 
 // 时间控件弹层
@@ -379,14 +466,40 @@ function buildPanelHTML(key) {
       return head('CONTACT', '联系方式', '欢迎交流，期待与你相遇！') +
         r.contact.map(c => `<div class="contact-item"><span class="ci-ico">${c.icon}</span><span>${c.label}：<a href="${c.href}" target="_blank" rel="noopener">${c.value}</a></span></div>`).join('');
     case 'outfits':
-      return head('WARDROBE', '换装', '点一套衣服，岛上的角色会立即换装。') +
-        `<div class="outfit-grid">` + OUTFITS.map(o => `
-          <button class="outfit-card${o.id === currentOutfit ? ' active' : ''}" data-outfit="${o.id}">
+      return head('WARDROBE', '自由穿搭', '选预设、调颜色、再戴上一件喜欢的小配饰。') +
+        `<h3 class="wardrobe-section-title">套装预设</h3>
+          <div class="outfit-grid">` + OUTFITS.map(o => `
+          <button type="button" class="outfit-card${o.id === currentOutfit ? ' active' : ''}" data-outfit="${o.id}">
             <span class="outfit-icon">${o.icon}</span>
             <span class="outfit-copy"><b>${o.name}</b><small>${o.note}</small></span>
             <span class="outfit-swatches">${o.swatches.map(color => `<i style="background:${color}"></i>`).join('')}</span>
           </button>`).join('') + `</div>
-          <p class="outfit-tip">✦ 选择会保存在当前浏览器，下次登岛继续穿这一套。</p>`;
+          <h3 class="wardrobe-section-title">自由调色盘</h3>
+          <div class="color-tools">
+            <label class="color-tool">
+              <span>上衣</span>
+              <input type="color" data-color-key="sweater" value="${wardrobeState.sweater}" aria-label="自定义上衣颜色">
+            </label>
+            <label class="color-tool">
+              <span>长裤</span>
+              <input type="color" data-color-key="pants" value="${wardrobeState.pants}" aria-label="自定义长裤颜色">
+            </label>
+            <label class="color-tool">
+              <span>鞋子</span>
+              <input type="color" data-color-key="shoe" value="${wardrobeState.shoe}" aria-label="自定义鞋子颜色">
+            </label>
+            <label class="color-tool">
+              <span>配饰色</span>
+              <input type="color" data-color-key="accent" value="${wardrobeState.accent}" aria-label="自定义配饰颜色">
+            </label>
+          </div>
+          <div class="palette-strip"><i style="background:${wardrobeState.sweater}"></i><i style="background:${wardrobeState.pants}"></i><i style="background:${wardrobeState.shoe}"></i><i style="background:${wardrobeState.accent}"></i></div>
+          <h3 class="wardrobe-section-title">配饰</h3>
+          <div class="accessory-grid">` + ACCESSORIES.map(a => `
+            <button type="button" class="accessory-chip${a.id === wardrobeState.accessory ? ' active' : ''}" data-accessory="${a.id}">
+              <span>${a.icon}</span>${a.name}
+            </button>`).join('') + `</div>
+          <p class="outfit-tip">✦ 自定义颜色和配饰都会保存在当前浏览器，下次登岛继续使用。</p>`;
     default: return '';
   }
 }
@@ -443,8 +556,20 @@ function closePanel() {
 }
 $('panelClose').addEventListener('click', closePanel);
 panelContent.addEventListener('click', e => {
-  const button = e.target.closest('[data-outfit]');
-  if (button) applyOutfit(button.dataset.outfit, true);
+  const outfitButton = e.target.closest('[data-outfit]');
+  if (outfitButton) { applyOutfit(outfitButton.dataset.outfit, true); return; }
+  const accessoryButton = e.target.closest('[data-accessory]');
+  if (accessoryButton) chooseAccessory(accessoryButton.dataset.accessory, true);
+});
+panelContent.addEventListener('input', e => {
+  const input = e.target.closest('[data-color-key]');
+  if (!input) return;
+  setCustomColor(input.dataset.colorKey, input.value);
+  const strip = panelContent.querySelector('.palette-strip');
+  if (strip) {
+    const values = [wardrobeState.sweater, wardrobeState.pants, wardrobeState.shoe, wardrobeState.accent];
+    strip.querySelectorAll('i').forEach((node, index) => { node.style.background = values[index]; });
+  }
 });
 const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系'],['outfits','👗','换装']];
 const dock = $('dock');

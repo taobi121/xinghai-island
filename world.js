@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PALETTE, mat, texMat, grassTexture, sandTexture, brickTexture, stoneTexture, woodTexture, glassTexture, pathTexture, cobbleTexture, waterFoamTexture } from './textures.js';
+import { PALETTE, mat, texMat, grassTexture, sandTexture, brickTexture, stoneTexture, woodTexture, glassTexture, pathTexture, cobbleTexture, waterFoamTexture } from './textures.js?v=20261120b';
 import { blossomCrown, umbrellaCanopy, organicCyl, lathe, roundedBox } from './geo.js';
 import { buildCarouselPavilion } from './buildings.js';
 
@@ -70,8 +70,8 @@ export function createOcean(scene, uniformsOut) {
   const geo = new THREE.PlaneGeometry(600, 600, 1, 1);
   const uniforms = {
     uTime: { value: 0 },
-    uColorDeep: { value: new THREE.Color(0x3FA6C4) },
-    uColorShallow: { value: new THREE.Color(0x7FC4C8) },
+    uColorDeep: { value: new THREE.Color(0x2B9FC8) },
+    uColorShallow: { value: new THREE.Color(0x8ADFE0) },
     uSun: { value: new THREE.Color(0xFFE9C8) },
     uDay: { value: 1.0 }
   };
