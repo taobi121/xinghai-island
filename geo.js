@@ -27,6 +27,19 @@ function roundRect(w, h, r) {
   return s;
 }
 
+function archRect(w, h) {
+  const s = new THREE.Shape();
+  const half = w / 2;
+  const springY = h / 2 - half;
+  s.moveTo(-half, -h / 2);
+  s.lineTo(half, -h / 2);
+  s.lineTo(half, springY);
+  s.absarc(0, springY, half, 0, Math.PI, false);
+  s.lineTo(-half, -h / 2);
+  s.closePath();
+  return s;
+}
+
 /* ---------- 1. 圆角盒：取代硬方块，圆润活泼 ---------- */
 export function roundedBox(w, h, d, r, material, opts = {}) {
   // 绘本级圆角：0.12~0.2；按最薄边收窄倒角，避免薄片被倒穿
@@ -244,12 +257,19 @@ export function fanWindow(radius, height, segments, glassMat, frameMat) {
 export function windowUnit(w, h, glassMat, frameMat, { cross = true, arch = false } = {}) {
   const g = new THREE.Group();
   if (arch) {
-    // 拱顶窗
-    const shape = roundRect(w, h - w*0.5, 0.08);
-    g.add(mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.08, bevelEnabled: false, curveSegments: 10 }), frameMat, { z: -0.04 }));
-    const gs = roundRect(w*0.8, (h - w*0.5)*0.86, 0.06);
-    g.add(mesh(new THREE.ExtrudeGeometry(gs, { depth: 0.1, bevelEnabled: false, curveSegments: 10 }), glassMat, { z: 0.02, shadow: false }));
-    g.add(mesh(new THREE.CylinderGeometry(w*0.5, w*0.5, 0.1, 24, 1, false, 0, Math.PI), frameMat, { y: h/2 - w*0.5, z: -0.04, rx: Math.PI/2, shadow: false }));
+    // 完整拱顶窗：外框和玻璃都使用同一拱形轮廓，避免顶部缺一块。
+    const outer = archRect(w, h);
+    const inner = archRect(w * 0.78, h - 0.12);
+    g.add(mesh(
+      new THREE.ExtrudeGeometry(outer, { depth: 0.08, bevelEnabled: false, curveSegments: 18 }),
+      frameMat,
+      { z: -0.04 }
+    ));
+    g.add(mesh(
+      new THREE.ExtrudeGeometry(inner, { depth: 0.08, bevelEnabled: false, curveSegments: 18 }),
+      glassMat,
+      { z: 0.045, shadow: false }
+    ));
   } else {
     g.add(roundedBox(w, h, 0.1, 0.09, frameMat));
     g.add(roundedBox(w*0.82, h*0.84, 0.12, 0.06, glassMat, { z: 0.03, shadow: false }));
@@ -268,15 +288,29 @@ export function flowerBox(width, soilMat, potMat, flowerColors) {
   g.add(roundedBox(width, 0.32, 0.36, 0.06, potMat));
   g.add(mesh(new THREE.BoxGeometry(width*0.9, 0.05, 0.3), soilMat, { y: 0.17, shadow: false }));
   const n = Math.max(3, Math.round(width*3));
+  const flowerMats = flowerColors.map(color => M(color, {
+    roughness: 1, metalness: 0, emissive: 0, flatShading: false,
+    polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1
+  }));
+  const stemMat = M(0x7FAE62, { roughness: 1, metalness: 0 });
+  const heartMat = M(0xF7D67A, { roughness: 1, metalness: 0 });
   for (let i = 0; i < n; i++) {
     const x = -width/2 + 0.15 + (i/(n-1))*(width-0.3);
-    const fy = 0.32 + Math.random()*0.12;
-    g.add(mesh(new THREE.CylinderGeometry(0.02, 0.02, fy-0.15, 8), M(0x7FAE62), { x, y: 0.15+(fy-0.15)/2, shadow: false }));
-    const col = flowerColors[i % flowerColors.length];
-    const flower = mesh(new THREE.SphereGeometry(0.12, 14, 10), M(col), { x, y: fy, shadow: false });
-    flower.scale.set(1, 0.86, 1); g.add(flower);
-    // 花心
-    g.add(mesh(new THREE.SphereGeometry(0.045, 10, 8), M(0xF7D67A), { x, y: fy+0.02, z: 0.08, shadow: false }));
+    const fy = 0.35 + Math.sin(i * 1.7) * 0.035;
+    g.add(mesh(new THREE.CylinderGeometry(0.022, 0.022, fy - 0.15, 8), stemMat, {
+      x, y: 0.15 + (fy - 0.15) / 2, z: 0.01, shadow: false
+    }));
+    const flower = mesh(new THREE.SphereGeometry(0.145, 16, 12), flowerMats[i % flowerMats.length], {
+      x, y: fy, z: 0.045, shadow: false
+    });
+    flower.scale.set(1.06, 0.8, 0.52);
+    flower.renderOrder = 2;
+    g.add(flower);
+    const heart = mesh(new THREE.SphereGeometry(0.045, 10, 8), heartMat, {
+      x, y: fy, z: 0.122, shadow: false
+    });
+    heart.renderOrder = 3;
+    g.add(heart);
   }
   return g;
 }

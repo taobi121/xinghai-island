@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RESUME } from './resume.js';
-import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120b';
+import { ISLAND, createOcean, createIsland, createPaths, createDock, createVegetation, createProps } from './world.js?v=20261120g';
 import { buildCottage, buildCrystalTower, buildBrickHall, buildGlassTower, buildPostTower } from './buildings.js';
 import { PALETTE } from './textures.js?v=20261120b';
 import { createPlayer } from './character.js?v=20261120b';
@@ -876,7 +876,7 @@ function flyTo(pos, target, dur=1000) {
    ========================================================================== */
 const RIDES = [
   { id: 'carousel', name: '旋转木马', icon: '🎠', x: 8.6, z: -1.4, r: 3.9 },
-  { id: 'bike', name: '自行车', icon: '🚲', x: 8.5, z: 4.5, r: 2.2 }
+  { id: 'bike', name: '自行车', icon: '🚲', x: 2.2, z: 15.8, r: 2.2 }
 ];
 const SEATS = props.benches.map((bench, index) => {
   const seat = bench.userData.seat;

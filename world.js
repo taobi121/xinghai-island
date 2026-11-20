@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PALETTE, mat, texMat, grassTexture, sandTexture, brickTexture, stoneTexture, woodTexture, glassTexture, pathTexture, cobbleTexture, waterFoamTexture } from './textures.js?v=20261120b';
-import { blossomCrown, umbrellaCanopy, organicCyl, lathe, roundedBox } from './geo.js';
+import { blossomCrown, umbrellaCanopy, organicCyl, lathe, roundedBox } from './geo.js?v=20261120g';
 import { buildCarouselPavilion } from './buildings.js';
 
 const clamp = THREE.MathUtils.clamp;
@@ -724,7 +724,7 @@ export function createProps(islandGroup, emissiveMats, lampLights) {
 
   lamp(-4, 6); lamp(4, 6); lamp(-4, -6); lamp(4, -6);
   bench(-7, 3, 0.5); bench(7, 3, -0.5);
-  const bike = bicycle(8.5, 4.5, 0.4);
+  const bike = bicycle(2.2, 15.8, 0.3);
   const f = fountain(0, 0);
   // 版本 A 的罗马拱门遮挡码头到喷泉的视线，参考图中不存在，B 版美术层去掉（无碰撞/布局影响）
 

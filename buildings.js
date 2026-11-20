@@ -3,7 +3,7 @@ import { mat, texMat, PALETTE, brickTexture, stoneTexture, woodTexture, glassTex
 import {
   M, mesh, roundedBox, organicCyl, lathe, dome, archedWall, archFrame, column,
   eaves, hipRoof, fanWindow, windowUnit, steps, beltMolding, flag, flowerBox, signboard, vine, chimney
-} from './geo.js';
+} from './geo.js?v=20261120g';
 
 const G = 1.6; // 岛面高度，与 world.js ISLAND.groundY 保持一致
 
