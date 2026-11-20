@@ -13,18 +13,26 @@
 }
 </script>
 <link rel="modulepreload" href="./vendor/three/three.module.min.js">
-<link rel="modulepreload" href="./main.js?v=20261120s">
+<link rel="modulepreload" href="./main.js?v=20261120t">
 <link data-page-node-id="AX7tjJNQQELUN0vvublhXh" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%9D%EF%B8%8F%3C/text%3E%3C/svg%3E" rel="icon">
-<link data-page-node-id="7srTRCNqhIyP8KZSWCIFht" href="./style.css?v=20261120o" rel="stylesheet">
+<link data-page-node-id="7srTRCNqhIyP8KZSWCIFht" href="./style.css?v=20261120p" rel="stylesheet">
 </head>
 <body data-page-node-id="WR2LEmoEHqXYuftqpvSoL7">
 <div data-page-node-id="PoB8kPNKXCQd2bRHPX9Bu2" id="app">
   <div data-page-node-id="NhhD4oOSWbAQZveG6oSIdP" id="scene-container"></div>
 
   <!--pnid:ET7IaPKgUBiDezSELcHuef--><!-- 加载 -->
-  <div data-page-node-id="Caaon7iQ2dLK4X2lW8gKVv" id="loading">
-    <div data-page-node-id="sDgvf9OSv9VMk6sfZC5v71" class="spinner"></div>
-    <p data-page-node-id="mq1Q63bai4DAu5oFpXoowz" id="loadingText"><!--pnid:2ubU3ceS9ChFosNYBF1Vzm-->正在布置小岛…</p>
+  <div class="loading-screen" id="loading">
+    <div class="loading-aurora loading-aurora-a"></div>
+    <div class="loading-aurora loading-aurora-b"></div>
+    <div class="loading-card">
+      <div class="loading-mark"><span>🏝️</span></div>
+      <p class="loading-eyebrow">WELCOME TO XINGHAI</p>
+      <h2>星海旅岛</h2>
+      <p class="loading-copy" id="loadingText">正在绘制海风、灯火与小岛…</p>
+      <div class="loading-track"><span class="loading-bar"></span></div>
+      <div class="loading-meta"><span>准备登岛</span><b id="loadingPercent">0%</b></div>
+    </div>
   </div>
 
   <!--pnid:HuiIFZE81YAIYOzwDvD0Xi--><!-- 开场（参考风格卡片） -->
@@ -115,6 +123,8 @@
     <span data-page-node-id="GxtsTnTyPk3hruXZwFJeDR" class="music-vol" id="musicVol"><!--pnid:oDSk0bAcAt5lBy0H57kj2a-->🔇</span>
   </div>
 
+  <button class="panel-scrim" id="panelScrim" aria-label="收起详情面板"></button>
+
   <!--pnid:ofoJdpEFgfkkey8Oezjvjc--><!-- 侧边信息面板 -->
   <aside data-page-node-id="Nc0saEJAWhcqQO23xfI1eU" aria-live="polite" id="panel">
     <button data-page-node-id="ngM2gq86XMtJpW7zccUmuq" aria-label="关闭" id="panelClose"><!--pnid:QRlsXVJGSmzEEUawysciJ1-->✕</button>
@@ -164,6 +174,6 @@
     </div>
   </div>
 </div>
-<script data-page-node-id="CnOpe8yJSDrbL46FqIFvCs" src="./main.js?v=20261120s" type="module"></script>
+<script data-page-node-id="CnOpe8yJSDrbL46FqIFvCs" src="./main.js?v=20261120t" type="module"></script>
 </body>
 </html>

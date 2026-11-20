@@ -453,7 +453,7 @@ const timeSlider = $('timeSlider'), timeIcon = $('timeIcon'), timeLabel = $('tim
 const areaTitle = $('areaTitle'), areaName = $('areaName');
 const speech = $('speech'), speechText = $('speechText');
 const nearBtn = $('nearBtn'), nearName = $('nearName');
-const panel = $('panel'), panelContent = $('panelContent');
+const panel = $('panel'), panelContent = $('panelContent'), panelScrim = $('panelScrim');
 const bookModal = $('bookModal'), bookImage = $('bookImage'), bookTitle = $('bookTitle');
 const bookDescription = $('bookDescription'), bookBadges = $('bookBadges');
 const bookFoundCount = $('bookFoundCount'), bookNext = $('bookNext');
@@ -627,6 +627,8 @@ function openPanel(key) {
   if (!['about','skills','experience','projects','contact','outfits','mailbox'].includes(key)) return;
   closeNpcDialog();
   if (rideState) endRide();
+  panel.scrollTop = 0;
+  panelScrim.classList.add('open');
   if (key === 'mailbox') {
     panelOpen = true;
     cameraMode = 'panel';
@@ -690,11 +692,16 @@ function openPanel(key) {
 function closePanel() {
   panelOpen = false;
   panel.classList.remove('open');
+  panelScrim.classList.remove('open');
   document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
   areaTitle.classList.add('hidden');
   if (entered) cameraMode = 'follow';
 }
 $('panelClose').addEventListener('click', closePanel);
+panelScrim.addEventListener('click', closePanel);
+panel.addEventListener('click', e => {
+  if (e.target === panel) closePanel();
+});
 function closeCenterOverlays() {
   let closed = false;
   if (npcDialogOpen) { closeNpcDialog(); closed = true; }
@@ -768,7 +775,12 @@ panelContent.addEventListener('submit', async e => {
 const NAV = [['about','🏠','关于我'],['skills','💎','技能'],['experience','📚','经历'],['projects','🏆','项目'],['contact','📮','联系'],['outfits','👗','换装']];
 const dock = $('dock');
 dock.innerHTML = NAV.map(([k,i,t]) => `<button class="dock-btn" data-key="${k}"><span class="ico">${i}</span>${t}</button>`).join('');
-dock.addEventListener('click', e => { const b = e.target.closest('.dock-btn'); if (b) openPanel(b.dataset.key); });
+dock.addEventListener('click', e => {
+  const b = e.target.closest('.dock-btn');
+  if (!b) return;
+  if (panelOpen && b.classList.contains('active')) closePanel();
+  else openPanel(b.dataset.key);
+});
 
 /* ==========================================================================
    小地图（Canvas 2D 俯视图）
@@ -1458,8 +1470,13 @@ animate();
 requestAnimationFrame(() => {
   document.getElementById('app').classList.add('app-ready');
   const l = $('loading');
-  l.style.opacity = '0';
-  setTimeout(() => l.remove(), 320);
+  const loadingText = $('loadingText');
+  const loadingPercent = $('loadingPercent');
+  loadingText.textContent = '小岛准备好了';
+  loadingPercent.textContent = '100%';
+  l.classList.add('complete');
+  setTimeout(() => l.classList.add('hidden'), 360);
+  setTimeout(() => l.remove(), 980);
 });
 // 调试/自动化钩子（只读查询 + 定位，供测试与分享链接使用，不影响正常玩法）
 window.__islandDebug = {
